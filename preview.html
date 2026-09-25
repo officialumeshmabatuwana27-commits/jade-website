@@ -15,17 +15,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script>
-    (function() {
-      try {
-        var theme = localStorage.getItem('jade-theme');
-        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (theme === 'dark' || (!theme && prefersDark)) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      } catch(e) {}
-    })();
+    document.documentElement.classList.remove('dark');
+    try { localStorage.removeItem('jade-theme'); } catch(e) {}
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -336,19 +327,9 @@
           </button>
         </nav>
 
-        <!-- Theme Toggle -->
-        <div class="hidden sm:flex items-center gap-3">
-          <button onclick="toggleTheme()" class="theme-toggle-btn p-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-[#231F20] dark:text-amber-400 transition-all shadow-sm flex items-center justify-center" aria-label="Toggle Dark / Light Theme" title="Toggle Theme">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-          </button>
-        </div>
-
-        <!-- Mobile Menu Toggle & Theme Toggle -->
+        <!-- Mobile Menu Toggle -->
         <div class="flex items-center gap-2 lg:hidden">
-          <button onclick="toggleTheme()" class="theme-toggle-btn p-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-[#231F20] dark:text-amber-400" aria-label="Toggle Theme">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-          </button>
-          <button onclick="toggleMobileMenu()" class="p-2.5 rounded-xl text-[#231F20] dark:text-white hover:text-[#00A651] hover:bg-gray-100 dark:hover:bg-slate-800">
+          <button onclick="toggleMobileMenu()" class="p-2.5 rounded-xl text-[#231F20] hover:text-[#00A651] hover:bg-gray-100">
             <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/></svg>
           </button>
         </div>
@@ -2501,21 +2482,7 @@
     }
 
     
-    // THEME TOGGLE (Dark / Light)
-    function toggleTheme() {
-      const isDark = document.documentElement.classList.toggle('dark');
-      localStorage.setItem('jade-theme', isDark ? 'dark' : 'light');
-      updateThemeIcons();
-    }
 
-    function updateThemeIcons() {
-      const isDark = document.documentElement.classList.contains('dark');
-      const sunIcon = '<svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>';
-      const moonIcon = '<svg class="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>';
-      document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
-        btn.innerHTML = isDark ? sunIcon : moonIcon;
-      });
-    }
 
     // Product Page Hero 3D Video & Mascot Switcher
     function switchProductHeroTab(mode) {
@@ -2577,7 +2544,6 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      updateThemeIcons();
       renderProducts();
       renderProjectsAndClients();
       runCalculator();

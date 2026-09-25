@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, Leaf } from "lucide-react";
-import ThemeToggle from "@/components/ThemeToggle";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -72,15 +71,10 @@ export default function Navbar() {
               Get in Touch
             </Link>
 
-            {/* Desktop Theme Toggle */}
-            <div className="ml-2">
-              <ThemeToggle />
-            </div>
           </div>
 
-          {/* Mobile Right Controls: Theme Toggle & Hamburger */}
+          {/* Mobile Right Controls: Hamburger */}
           <div className="flex items-center gap-2 md:hidden">
-            <ThemeToggle />
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-white p-2.5 rounded-xl hover:bg-white/10 transition-colors"

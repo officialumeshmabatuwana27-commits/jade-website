@@ -3,7 +3,7 @@ import { Manrope, Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { ThemeProvider } from "@/components/ThemeProvider";
+
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -52,17 +52,8 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              (function() {
-                try {
-                  var saved = localStorage.getItem('jade-theme');
-                  var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                  if (saved === 'dark' || (!saved && prefersDark)) {
-                    document.documentElement.classList.add('dark');
-                  } else {
-                    document.documentElement.classList.remove('dark');
-                  }
-                } catch(e) {}
-              })();
+              document.documentElement.classList.remove('dark');
+              try { localStorage.removeItem('jade-theme'); } catch(e) {}
             `,
           }}
         />
@@ -78,13 +69,11 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${manrope.variable} ${inter.variable} font-sans bg-cream text-charcoal dark:bg-[#0B0F17] dark:text-slate-100 antialiased selection:bg-jade-500 selection:text-white transition-colors duration-200`}
+        className={`${manrope.variable} ${inter.variable} font-sans bg-cream text-charcoal antialiased selection:bg-jade-500 selection:text-white transition-colors duration-200`}
       >
-        <ThemeProvider>
-          <Navbar />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-        </ThemeProvider>
+        <Navbar />
+        <main className="min-h-screen">{children}</main>
+        <Footer />
       </body>
     </html>
   );
