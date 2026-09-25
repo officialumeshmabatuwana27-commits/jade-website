@@ -1,0 +1,10 @@
+.gcloudignore
+.git
+.gitignore
+node_modules/
+jade-coatings/node_modules/
+jade-coatings/.next/
+*.log
+__pycache__/
+*.pyc
+.env.local

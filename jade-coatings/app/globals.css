@@ -1,0 +1,232 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --jade-green: #2e7d4f;
+  --jade-light: #4caf80;
+  --jade-pale: #e8f5ee;
+  --earth-brown: #6b4f3a;
+  --cream: #fafaf7;
+  --charcoal: #1a2e23;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@layer base {
+  body {
+    @apply bg-cream text-charcoal dark:bg-[#0B0F17] dark:text-slate-100 transition-colors duration-200;
+    font-family: var(--font-sans), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    letter-spacing: -0.011em;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading), "Manrope", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    letter-spacing: -0.025em;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--jade-green);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--jade-light);
+}
+
+/* Infinite Sliding Marquee for Home Page */
+@keyframes slideMarquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-slide-logos {
+  display: flex;
+  width: max-content;
+  animation: slideMarquee 28s linear infinite;
+  will-change: transform;
+}
+
+.animate-slide-logos:hover {
+  animation-play-state: paused;
+}
+
+/* 3D Deck Transformation Hero Animation */
+@keyframes deckTransform {
+  0%, 35% {
+    opacity: 0;
+    transform: scale(1.04) rotateX(2deg);
+    filter: brightness(0.9) contrast(0.95);
+  }
+  45%, 90% {
+    opacity: 1;
+    transform: scale(1) rotateX(0deg);
+    filter: brightness(1.05) contrast(1.05);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.04) rotateX(2deg);
+    filter: brightness(0.9) contrast(0.95);
+  }
+}
+
+@keyframes deckScanWave {
+  0%, 32% {
+    left: -20%;
+    opacity: 0;
+  }
+  38% {
+    opacity: 1;
+  }
+  48% {
+    opacity: 0.9;
+  }
+  55%, 100% {
+    left: 120%;
+    opacity: 0;
+  }
+}
+
+.hero-deck-3d-restored {
+  animation: deckTransform 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: opacity, transform, filter;
+}
+
+.hero-deck-scanline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 120px;
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 166, 81, 0.4) 40%, rgba(255, 255, 255, 0.9) 50%, rgba(0, 166, 81, 0.4) 60%, transparent 100%);
+  animation: deckScanWave 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  transform: skewX(-20deg);
+  pointer-events: none;
+  z-index: 2;
+  filter: blur(2px);
+}
+
+/* 3D Product Hero Floating Can and Orbital Rings */
+@keyframes float3DCan {
+  0%, 100% {
+    transform: translateY(0px) rotateY(-8deg) rotateX(4deg) scale(1);
+  }
+  50% {
+    transform: translateY(-16px) rotateY(12deg) rotateX(-2deg) scale(1.03);
+  }
+}
+
+@keyframes orbitSpin {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.05);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1.1);
+  }
+}
+
+.animate-float-3d {
+  animation: float3DCan 6s ease-in-out infinite;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.animate-orbit-ring {
+  animation: orbitSpin 18s linear infinite;
+  will-change: transform;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+
+/* 3D Mascot Character Floating & Interactive Rotation */
+@keyframes float3DMascot {
+  0%, 100% {
+    transform: translateY(0px) rotateY(-6deg) rotateX(3deg) scale(1);
+  }
+  25% {
+    transform: translateY(-14px) rotateY(4deg) rotateX(-2deg) scale(1.02);
+  }
+  50% {
+    transform: translateY(-22px) rotateY(10deg) rotateX(1deg) scale(1.04);
+  }
+  75% {
+    transform: translateY(-10px) rotateY(-2deg) rotateX(-1deg) scale(1.01);
+  }
+}
+
+@keyframes mascotWave {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  20%, 60% {
+    transform: rotate(8deg);
+  }
+  40%, 80% {
+    transform: rotate(-6deg);
+  }
+}
+
+@keyframes mascotGroundShadow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(0.75);
+    opacity: 0.25;
+  }
+}
+
+.animate-mascot-3d {
+  animation: float3DMascot 5s ease-in-out infinite;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.animate-mascot-shadow {
+  animation: mascotGroundShadow 5s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+
+
+

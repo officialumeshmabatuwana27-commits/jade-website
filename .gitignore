@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+jade-coatings/node_modules/
+
+# Next.js Build Output
+.next/
+jade-coatings/.next/
+out/
+
+# Python cache & virtual environments
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# Installers and Logs
+GoogleCloudSDKInstaller.exe
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment & Secrets
+.env.local
+.env*.local
+
+# System files
+.DS_Store
+Thumbs.db
