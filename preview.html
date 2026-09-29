@@ -933,14 +933,6 @@
               </span>
               <span>Find a Shop & Dealer Directory</span>
             </h1>
-            <p class="text-xs text-gray-500 mt-1">Locate authorized JADE paint centers with live GPS distance and turn-by-turn driving directions.</p>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <span id="cloud-sync-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[#074626] text-[11px] font-bold">
-              <span class="w-2 h-2 rounded-full bg-[#00A651] animate-pulse"></span>
-              <span>Live Cloud Synced</span>
-            </span>
           </div>
         </div>
 
@@ -1024,15 +1016,9 @@
             </div>
 
             <!-- Map Floating Legend -->
-            <div class="absolute bottom-6 left-6 bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl shadow-lg border border-gray-200 text-xs flex items-center gap-4">
-              <div class="flex items-center gap-1.5">
-                <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-                <span class="font-semibold text-gray-700">JADE Dealer</span>
-              </div>
-              <div id="legend-user-dot" class="items-center gap-1.5 hidden">
-                <span class="w-3 h-3 rounded-full bg-blue-600 inline-block"></span>
-                <span class="font-semibold text-gray-700">Your Location</span>
-              </div>
+            <div id="legend-user-dot" class="absolute bottom-6 left-6 bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl shadow-lg border border-gray-200 text-xs hidden items-center gap-1.5">
+              <span class="w-3 h-3 rounded-full bg-blue-600 inline-block"></span>
+              <span class="font-semibold text-gray-700">Your Location</span>
             </div>
           </div>
         </div>
@@ -2978,11 +2964,18 @@
       }
 
       const legendUserDot = document.getElementById('legend-user-dot');
+      if (legendUserDot) {
+        if (currentShopUserLocation) {
+          legendUserDot.classList.remove('hidden');
+          legendUserDot.classList.add('flex');
+        } else {
+          legendUserDot.classList.add('hidden');
+          legendUserDot.classList.remove('flex');
+        }
+      }
 
       // 3. User location marker and radius circle
       if (currentShopUserLocation) {
-        if (legendUserDot) legendUserDot.classList.remove('hidden');
-
         // Custom pulsing blue user marker
         const el = document.createElement('div');
         el.className = 'w-6 h-6 rounded-full bg-blue-600 border-2 border-white shadow-lg flex items-center justify-center animate-pulse';
@@ -3027,7 +3020,7 @@
         const popupHtml = `
           <div style="font-family: 'Plus Jakarta Sans', sans-serif; padding: 4px; max-width: 250px;">
             <div style="font-size: 10px; font-weight: 800; color: #00A651; text-transform: uppercase; margin-bottom: 2px;">
-              ${shop.isFlagship ? '★ Flagship Dealer' : 'JADE Authorized Dealer'}
+              ${shop.isFlagship ? '★ Flagship Store' : 'Authorized Store'}
             </div>
             <div style="font-size: 14px; font-weight: 800; color: #111827; margin-bottom: 4px;">${escapeHtml(shop.name)}</div>
             <div style="font-size: 12px; color: #4B5563; margin-bottom: 4px;">📍 ${escapeHtml(shop.address || shop.city)}</div>
@@ -3327,8 +3320,6 @@
               localStorage.setItem(SHOPS_STORAGE_KEY, currentJson);
               renderShops();
             }
-            const badge = document.getElementById('cloud-sync-status-badge');
-            if (badge) badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-[#00A651] animate-pulse"></span><span>Live Cloud Connected</span>';
             isCloudSyncing = false;
             return;
           }

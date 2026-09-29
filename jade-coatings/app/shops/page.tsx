@@ -402,9 +402,6 @@ export default function FindAShopPage() {
                 </span>
                 <span>Find a Shop & Dealer Directory</span>
               </h1>
-              <p className="text-xs text-gray-500 mt-1">
-                Locate authorized JADE paint centers with live GPS distance and turn-by-turn driving directions.
-              </p>
             </div>
           </div>
 
@@ -637,18 +634,12 @@ export default function FindAShopPage() {
               </div>
 
               {/* Map floating legend */}
-              <div className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl shadow-lg border border-gray-200 text-xs flex items-center gap-4">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" />
-                  <span className="font-semibold text-gray-700">JADE Dealer</span>
+              {userLocation && (
+                <div className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl shadow-lg border border-gray-200 text-xs flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-blue-600 inline-block" />
+                  <span className="font-semibold text-gray-700">Your Location</span>
                 </div>
-                {userLocation && (
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 rounded-full bg-blue-600 inline-block" />
-                    <span className="font-semibold text-gray-700">Your Location</span>
-                  </div>
-                )}
-              </div>
+              )}
             </div>
           </div>
         </div>
