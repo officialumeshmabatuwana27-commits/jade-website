@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard | JADE Coatings Management System</title>
-  <link rel="icon" type="image/png" href="assests/Logo.png" onerror="this.href='Logo.png'">
+  <link rel="icon" type="image/png" href="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.png" onerror="this.onerror=null; this.href='assests/Logo.png'">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -45,7 +45,7 @@
         <a href="index.html" class="inline-flex items-center gap-3 group">
           <div class="w-13 h-13 rounded-2xl bg-gradient-to-tr from-[#00A651] to-emerald-400 p-0.5 shadow-xl shadow-black/40 group-hover:scale-105 transition-transform">
             <div class="w-full h-full bg-white rounded-[14px] flex items-center justify-center p-1.5">
-              <img src="assests/Logo.png" onerror="this.src='Logo.png'" alt="JADE Coatings" class="h-9 w-auto object-contain">
+              <img src="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.png" onerror="this.onerror=null; this.src='assests/Logo.png'" alt="JADE Coatings" class="h-9 w-auto object-contain">
             </div>
           </div>
           <div class="text-left">
@@ -165,7 +165,7 @@
           <div class="flex items-center gap-4">
             <a href="index.html" class="flex items-center gap-3">
               <div class="h-11 w-11 rounded-xl bg-slate-50 border border-slate-200 p-1 flex items-center justify-center">
-                <img src="assests/Logo.png" onerror="this.src='Logo.png'" alt="JADE Logo" class="h-8 w-auto object-contain">
+                <img src="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.png" onerror="this.onerror=null; this.src='assests/Logo.png'" alt="JADE Logo" class="h-8 w-auto object-contain">
               </div>
               <div>
                 <span class="text-lg font-black tracking-tight text-slate-900 block leading-tight">

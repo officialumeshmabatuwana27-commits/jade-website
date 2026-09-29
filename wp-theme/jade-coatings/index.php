@@ -1,4 +1,4 @@
-﻿<!-- Live Interactive Preview for JADE Coatings -->
+<!-- Live Interactive Preview for JADE Coatings -->
 <!-- Updated with:
   1. Logo sized up TWICE as large (h-28 to h-44 in header, h-24 to h-32 in footer)
   2. Interactive Before/After Slide Preview on each product card
@@ -15,6 +15,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JADE Coatings — Premium Water-Based Solutions | Official Interactive Demo</title>
+  <link rel="icon" type="image/png" href="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -313,8 +314,8 @@
         <a href="javascript:void(0)" onclick="navigateTo('home')" class="flex items-center py-2 group">
           <div class="bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl flex items-center transition-transform duration-200 group-hover:scale-105 shadow-sm border border-emerald-50">
             <img
-              src="<?php echo get_template_directory_uri(); ?>/assests/Logo.png" onerror="this.src='https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.png'"
-              onerror="this.src='Logo.png'"
+              src="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.png"
+              onerror="this.onerror=null; this.src='assests/Logo.png'"
               alt="JADE Coatings Logo"
               class="h-10 sm:h-12 md:h-14 w-auto object-contain"
             />
@@ -372,16 +373,16 @@
       <div class="absolute inset-0 z-0 overflow-hidden" style="perspective: 1000px;">
         <!-- State 1: Dried Out / Weathered Wooden Deck (Base Layer) -->
         <img
-          src="<?php echo get_template_directory_uri(); ?>/assests/deck-weathered.jpg" onerror="this.src='https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/deck-weathered.jpg'"
-          onerror="this.src='deck-weathered.jpg'"
+          src="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/deck-weathered.jpg"
+          onerror="this.onerror=null; this.src='assests/deck-weathered.jpg'"
           alt="Weathered Dried Out Wooden Deck"
           class="absolute inset-0 w-full h-full object-cover object-center scale-105"
         />
 
         <!-- State 2: Elegant Coated Wooden Deck (3D Transformed Layer) -->
         <img
-          src="<?php echo get_template_directory_uri(); ?>/assests/deck-restored.jpg" onerror="this.src='https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/deck-restored.jpg'"
-          onerror="this.src='deck-restored.jpg'"
+          src="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/deck-restored.jpg"
+          onerror="this.onerror=null; this.src='assests/deck-restored.jpg'"
           alt="Restored Elegant Golden Teak Wooden Deck"
           class="hero-deck-3d-restored absolute inset-0 w-full h-full object-cover object-center"
         />
@@ -1176,8 +1177,8 @@
         <div class="sm:col-span-2 space-y-4">
           <div class="bg-white px-3 py-2 rounded-xl inline-flex shadow-sm border border-white/20">
             <img
-              src="<?php echo get_template_directory_uri(); ?>/assests/Logo.png" onerror="this.src='https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.png'"
-              onerror="this.src='Logo.png'"
+              src="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.png"
+              onerror="this.onerror=null; this.src='assests/Logo.png'"
               alt="JADE Coatings Logo"
               class="h-11 sm:h-13 w-auto object-contain"
             />
@@ -1314,6 +1315,14 @@
   </footer>
 
   <script>
+    // ASSET CDN HELPER FOR RELIABLE CLOUD DELIVERY
+    const ASSETS_BASE = "https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/";
+    function getAssetUrl(filename) {
+      if (!filename) return '';
+      if (filename.startsWith('http://') || filename.startsWith('https://')) return filename;
+      return ASSETS_BASE + encodeURIComponent(filename.trim());
+    }
+
     // 1. PRODUCTS REPOSITORY WITH BEFORE/AFTER PROFILES
     const PRODUCTS = [
       // DIVISION 1: DOMESTIC
@@ -2047,7 +2056,7 @@
             <!-- STATIC IMAGE PREVIEW (No slider) -->
             <div class="mb-4">
               <div class="relative h-44 sm:h-48 w-full rounded-2xl overflow-hidden shadow-inner border border-gray-200 bg-slate-900 flex items-center justify-center">
-                <img src="${THEME_DIR_URI}/assests/${encodeURIComponent(p.image)}" onerror="this.src=GITHUB_ASSETS_CDN + encodeURIComponent('${p.image}') || '${p.image}'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="${p.name}" />
+                <img src="${getAssetUrl(p.image)}" onerror="this.onerror=null; this.src='assests/' + encodeURIComponent('${p.image}')" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="${p.name}" />
                 <span class="absolute bottom-2 right-2.5 px-2.5 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-black/60 text-white border border-white/20 backdrop-blur-md shadow-sm">Industrial Tyre Solution</span>
               </div>
               <p class="text-[10px] text-gray-400 text-center mt-1 italic">Water-based green tire lubrication & release</p>
@@ -2063,14 +2072,14 @@
               <div class="ba-container relative h-44 sm:h-48 w-full shadow-inner border border-gray-200" id="ba-box-${p.id}">
                 <!-- AFTER IMAGE / VIEW (Background) -->
                 <div class="absolute inset-0 bg-cover bg-center overflow-hidden flex items-center justify-center ${p.afterImage ? 'bg-gray-100' : 'bg-gradient-to-br ' + p.afterColor}">
-                  ${p.afterImage ? `<img src="${THEME_DIR_URI}/assests/${encodeURIComponent(p.afterImage)}" onerror="this.src=GITHUB_ASSETS_CDN + encodeURIComponent('${p.afterImage}') || '${p.afterImage}'" class="w-full h-full object-cover" />` : `<img src="assests/${p.image}" onerror="this.style.display='none'" class="w-full h-full object-cover opacity-90 mix-blend-overlay" />`}
+                  ${p.afterImage ? `<img src="${getAssetUrl(p.afterImage)}" onerror="this.onerror=null; this.src='assests/' + encodeURIComponent('${p.afterImage}')" class="w-full h-full object-cover" />` : `<img src="${getAssetUrl(p.image)}" onerror="this.style.display='none'" class="w-full h-full object-cover opacity-90 mix-blend-overlay" />`}
                   <span class="absolute bottom-2 right-2.5 px-2.5 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-black/40 text-white border border-white/20 backdrop-blur-md z-10 shadow-sm">AFTER</span>
                 </div>
 
                 <!-- BEFORE IMAGE / VIEW (Foreground Clip) -->
                 <div class="absolute inset-0 bg-cover bg-center overflow-hidden flex items-center justify-center ${p.beforeImage ? 'bg-gray-100' : 'bg-gradient-to-br ' + p.beforeColor}" id="ba-before-${p.id}" style="clip-path: inset(0 50% 0 0);">
-                  ${p.beforeImage ? `<img src="${THEME_DIR_URI}/assests/${encodeURIComponent(p.beforeImage)}" onerror="this.src=GITHUB_ASSETS_CDN + encodeURIComponent('${p.beforeImage}') || '${p.beforeImage}'" class="w-full h-full object-cover" />` : `<img src="assests/${p.image}" onerror="this.style.display='none'" class="w-full h-full object-cover filter grayscale contrast-75 opacity-70" />`}
-                  <span class="absolute bottom-2 left-2.5 px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-black/40 text-white border border-white/20 backdrop-blur-md z-10 shadow-sm">BEFORE</span>
+                  ${p.beforeImage ? `<img src="${getAssetUrl(p.beforeImage)}" onerror="this.onerror=null; this.src='assests/' + encodeURIComponent('${p.beforeImage}')" class="w-full h-full object-cover" />` : `<img src="${getAssetUrl(p.image)}" onerror="this.style.display='none'" class="w-full h-full object-cover filter grayscale contrast-75 opacity-70" />`}
+                  <span class="absolute bottom-2 left-2.5 px-2.5 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-black/40 text-white border border-white/20 backdrop-blur-md z-10 shadow-sm">BEFORE</span>
                 </div>
 
                 <!-- SLIDER DIVIDER LINE & HANDLE -->
@@ -2536,7 +2545,7 @@
           <div>
             ${proj.logo ? `
             <div class="h-24 w-full flex items-center justify-center p-3 rounded-2xl bg-gray-50/80 dark:bg-slate-900/60 border border-gray-100 dark:border-slate-800 mb-4 group-hover:bg-[#EBF8F2]/50 transition-colors">
-              <img src="${THEME_DIR_URI}/assests/${encodeURIComponent(proj.logo)}" onerror="this.src=GITHUB_ASSETS_CDN + encodeURIComponent('${proj.logo}') || '${proj.logo}'" alt="${proj.name} logo" class="max-h-20 max-w-[220px] w-auto object-contain transition-transform duration-300 hover:scale-105" />
+              <img src="${getAssetUrl(proj.logo)}" onerror="this.onerror=null; this.src='assests/' + encodeURIComponent('${proj.logo}')" alt="${proj.name} logo" class="max-h-20 max-w-[220px] w-auto object-contain transition-transform duration-300 hover:scale-105" />
             </div>
             ` : `
             <div class="h-11 w-11 rounded-2xl bg-[#EBF8F2] text-[#00A651] flex items-center justify-center font-bold mb-4 shadow-sm">
@@ -2564,7 +2573,7 @@
         // 100% Scaled up logo frame and dimensions
         const logoHtml = client.logo 
           ? `<div class="h-24 w-full flex items-center justify-center p-4 rounded-xl bg-gray-50/80 dark:bg-slate-900/60 border border-gray-100 dark:border-slate-800 group-hover:bg-[#EBF8F2]/50 dark:group-hover:bg-emerald-950/20 group-hover:border-[#00A651]/30 transition-colors mb-4">
-               <img src="${THEME_DIR_URI}/assests/${encodeURIComponent(client.logo)}" onerror="this.src=GITHUB_ASSETS_CDN + encodeURIComponent('${client.logo}') || '${client.logo}'" alt="${client.name} logo" class="max-h-20 max-w-[220px] w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
+               <img src="${getAssetUrl(client.logo)}" onerror="this.onerror=null; this.src='assests/' + encodeURIComponent('${client.logo}')" alt="${client.name} logo" class="max-h-20 max-w-[220px] w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
              </div>`
           : `<div class="h-24 w-full flex items-center justify-center mb-4">
                <div class="w-14 h-14 rounded-xl bg-[#EBF8F2] dark:bg-emerald-950/40 text-[#00A651] dark:text-emerald-400 flex items-center justify-center font-black tracking-tight text-2xl">
@@ -2596,7 +2605,7 @@
           
           if (client.logo) {
             item.innerHTML = `
-              <img src="${THEME_DIR_URI}/assests/${encodeURIComponent(client.logo)}" onerror="this.src=GITHUB_ASSETS_CDN + encodeURIComponent('${client.logo}') || '${client.logo}'" alt="${client.name} logo" class="h-12 sm:h-14 max-w-[180px] w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
+              <img src="${getAssetUrl(client.logo)}" onerror="this.onerror=null; this.src='assests/' + encodeURIComponent('${client.logo}')" alt="${client.name} logo" class="h-12 sm:h-14 max-w-[180px] w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
               <span class="font-bold text-sm sm:text-base text-[#231F20] dark:text-slate-200 group-hover:text-[#00A651] transition-colors">${client.name}</span>
             `;
           } else {
@@ -3520,4 +3529,3 @@
 <?php wp_footer(); ?>
 </body>
 </html>
-
