@@ -380,7 +380,7 @@
       "brand": "ECO-CLEANER",
       "division": "Domestic",
       "category": "Universal Cleaner",
-      "description": "This eco-friendly, 3-in-1 aqueous solution is expertly formulated to clean, condition, and prepare a diverse range of substrates—including metal, masonry, rubber, and wood—for flawless paint application.",
+      "description": "This eco-friendly, 3-in-1 aqueous solution is expertly formulated to clean, condition, and prepare a diverse range of substrates\u2014including metal, masonry, rubber, and wood\u2014for flawless paint application.",
       "features": [
         "Comprehensive Masonry Restoration: Effectively eradicates algae, fungi, and embedded dirt from all masonry surfaces, ensuring a pristine and hygienic foundation.",
         "Advanced Metal Degreasing & Derusting: Powerfully strips away stubborn rust, oil, and heavy grease from metal substrates, promoting a clean and receptive profile.",
@@ -483,7 +483,7 @@
     {
       "id": 17,
       "slug": "metashield-anti-corrosive-black",
-      "name": "Anti Corrosive – Black",
+      "name": "Anti Corrosive \u2013 Black",
       "brand": "METASHIELD",
       "division": "Industrial",
       "category": "Anti Corrosive",
@@ -726,5 +726,6 @@
     }
   ],
   "contacts": [],
-  "seeded": true
+  "seeded": true,
+  "shops": []
 }

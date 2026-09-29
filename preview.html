@@ -2684,133 +2684,42 @@
     // =========================================================================
     // 8. FIND A SHOP (DEALER LOCATOR & GOOGLE MAPS INTEGRATION)
     // =========================================================================
-    const DEFAULT_SHOPS_DATA = [
-      {
-        id: 1,
-        name: "JADE Coatings Flagship & Technical Center",
-        address: "No. 45 Nawala Road, Nugegoda",
-        city: "Colombo",
-        phone: "+94 11 282 8990",
-        lat: 6.8858,
-        lng: 79.8893,
-        openingHours: "Mon - Sat: 8:00 AM - 6:00 PM",
-        isAuthorizedDealer: true
-      },
-      {
-        id: 2,
-        name: "Colombo City Paint & Hardware Mart",
-        address: "182 Sri Sangaraja Mawatha, Colombo 10",
-        city: "Colombo",
-        phone: "+94 11 243 1245",
-        lat: 6.9360,
-        lng: 79.8650,
-        openingHours: "Mon - Sat: 8:30 AM - 6:30 PM",
-        isAuthorizedDealer: true
-      },
-      {
-        id: 3,
-        name: "Southern Coatings & Timber Care",
-        address: "240 Galle Road, Dehiwala-Mount Lavinia",
-        city: "Mount Lavinia",
-        phone: "+94 11 273 4567",
-        lat: 6.8415,
-        lng: 79.8680,
-        openingHours: "Mon - Sat: 8:00 AM - 6:00 PM",
-        isAuthorizedDealer: true
-      },
-      {
-        id: 4,
-        name: "Metro Paint Depot & Builders Supply",
-        address: "112 Parliament Road, Battaramulla",
-        city: "Battaramulla",
-        phone: "+94 11 288 3412",
-        lat: 6.9012,
-        lng: 79.9180,
-        openingHours: "Mon - Sat: 8:00 AM - 5:30 PM",
-        isAuthorizedDealer: true
-      },
-      {
-        id: 5,
-        name: "Kadawatha Hardware & Color World",
-        address: "48 Kandy Road, Kadawatha",
-        city: "Kadawatha",
-        phone: "+94 33 222 5678",
-        lat: 7.0016,
-        lng: 79.9535,
-        openingHours: "Mon - Sun: 7:30 AM - 7:00 PM",
-        isAuthorizedDealer: true
-      },
-      {
-        id: 6,
-        name: "Negombo Marine & Exterior Coatings",
-        address: "74 Main Street, Negombo",
-        city: "Negombo",
-        phone: "+94 31 223 8901",
-        lat: 7.2083,
-        lng: 79.8358,
-        openingHours: "Mon - Sat: 8:00 AM - 6:00 PM",
-        isAuthorizedDealer: true
-      },
-      {
-        id: 7,
-        name: "Kandy Central Paint & Hardware Stores",
-        address: "58 Dalada Veediya, Kandy",
-        city: "Kandy",
-        phone: "+94 81 222 3456",
-        lat: 7.2936,
-        lng: 80.6382,
-        openingHours: "Mon - Sat: 8:30 AM - 6:00 PM",
-        isAuthorizedDealer: true
-      },
-      {
-        id: 8,
-        name: "Galle Southern Paints & Construction",
-        address: "120 Matara Road, Galle",
-        city: "Galle",
-        phone: "+94 91 223 4512",
-        lat: 6.0367,
-        lng: 80.2170,
-        openingHours: "Mon - Sat: 8:00 AM - 6:00 PM",
-        isAuthorizedDealer: true
-      },
-      {
-        id: 9,
-        name: "Ruhunu Paints & Hardware Supply",
-        address: "65 Anagarika Dharmapala Mawatha, Matara",
-        city: "Matara",
-        phone: "+94 41 222 6789",
-        lat: 5.9496,
-        lng: 80.5469,
-        openingHours: "Mon - Sat: 8:00 AM - 6:00 PM",
-        isAuthorizedDealer: true
-      },
-      {
-        id: 10,
-        name: "Wayamba Paint & Industrial Coatings",
-        address: "32 Colombo Road, Kurunegala",
-        city: "Kurunegala",
-        phone: "+94 37 222 1234",
-        lat: 7.4863,
-        lng: 80.3647,
-        openingHours: "Mon - Sat: 8:00 AM - 6:00 PM",
-        isAuthorizedDealer: true
+    // Empty baseline: All shops must be added dynamically by Admin
+    const DEFAULT_SHOPS_DATA = [];
+    const SHOPS_STORAGE_KEY = 'jade_custom_shops_v2';
+
+    // Clear obsolete legacy store data with 10 default shops if present
+    try {
+      if (localStorage.getItem('jade_custom_shops')) {
+        localStorage.removeItem('jade_custom_shops');
       }
-    ];
+    } catch(e) {}
+
+    // Cross-tab real-time sync channel
+    let shopsBroadcastChannel = null;
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        shopsBroadcastChannel = new BroadcastChannel('jade_shops_sync_v2');
+      }
+    } catch(e) {}
 
     function getLocalShops() {
       try {
-        const stored = localStorage.getItem('jade_custom_shops');
+        const stored = localStorage.getItem(SHOPS_STORAGE_KEY);
         if (stored) {
           const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          if (Array.isArray(parsed)) return parsed;
         }
       } catch(e) {}
-      return DEFAULT_SHOPS_DATA;
+      return [];
     }
 
     function saveLocalShops(shopsList) {
       try {
-        localStorage.setItem('jade_custom_shops', JSON.stringify(shopsList));
+        localStorage.setItem(SHOPS_STORAGE_KEY, JSON.stringify(shopsList));
+        if (shopsBroadcastChannel) {
+          shopsBroadcastChannel.postMessage({ type: 'SHOPS_CHANGED', shops: shopsList, timestamp: Date.now() });
+        }
       } catch(e) {}
     }
 
@@ -2823,6 +2732,7 @@
     let userMapMarker = null;
     let shopInfoWindow = null;
     let currentFilteredShops = [];
+    let lastKnownShopsSnapshot = '';
 
     // Calculate distance between two lat/lon points using Haversine formula
     function calculateDistanceKm(lat1, lon1, lat2, lon2) {
@@ -2836,7 +2746,8 @@
       return R * c;
     }
 
-    function initShopMap() {
+    // Google Maps Initializer
+    function initShopsGoogleMap() {
       const mapContainer = document.getElementById('google-shops-map');
       if (!mapContainer || !window.google || !window.google.maps) return;
 
@@ -2844,9 +2755,10 @@
 
       shopMapInstance = new google.maps.Map(mapContainer, {
         center: defaultCenter,
-        zoom: currentShopUserLocation ? 12 : 9,
+        zoom: currentShopUserLocation ? 12 : 8,
         styles: [
-          { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }
+          { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+          { featureType: 'transit', elementType: 'labels', stylers: [{ visibility: 'off' }] }
         ],
         mapTypeControl: false,
         streetViewControl: false,
@@ -2855,65 +2767,91 @@
       });
 
       shopInfoWindow = new google.maps.InfoWindow();
-      renderShops();
+      updateShopMarkersOnMap();
     }
 
+    // RENDER SHOPS LIST & FILTER
     function renderShops() {
-      const shops = getLocalShops();
+      const allShops = getLocalShops();
+      lastKnownShopsSnapshot = JSON.stringify(allShops);
       const cardsList = document.getElementById('shops-cards-list');
       const countLabel = document.getElementById('shops-count-label');
-      if (!cardsList) return;
 
-      // 1. Calculate distances if user location available
-      const shopsWithDist = shops.map(shop => {
+      // 1. Calculate distances from active reference point
+      let shopsWithDistance = allShops.map(shop => {
         let dist = null;
         if (currentShopUserLocation) {
-          dist = calculateDistanceKm(currentShopUserLocation.lat, currentShopUserLocation.lng, shop.lat, shop.lng);
+          dist = calculateDistanceKm(
+            currentShopUserLocation.lat,
+            currentShopUserLocation.lng,
+            shop.lat,
+            shop.lng
+          );
         }
         return { ...shop, distance: dist };
       });
 
-      // 2. Filter by radius and search query
-      currentFilteredShops = shopsWithDist.filter(shop => {
-        if (currentSearchText) {
-          const q = currentSearchText.toLowerCase();
-          const matches = shop.name.toLowerCase().includes(q) ||
-                          shop.city.toLowerCase().includes(q) ||
-                          shop.address.toLowerCase().includes(q);
-          if (!matches) return false;
-        }
+      // 2. Filter by search text query
+      let filtered = shopsWithDistance;
+      if (currentSearchText.trim()) {
+        const q = currentSearchText.toLowerCase().trim();
+        filtered = filtered.filter(s =>
+          (s.name || '').toLowerCase().includes(q) ||
+          (s.city || '').toLowerCase().includes(q) ||
+          (s.address || '').toLowerCase().includes(q)
+        );
+      }
 
-        if (currentShopRadius !== null && shop.distance !== null) {
-          return shop.distance <= currentShopRadius;
-        }
-        return true;
-      });
+      // 3. Filter by Radius (5km, 10km, 20km) when user location is active
+      if (currentShopUserLocation && currentShopRadius !== null) {
+        filtered = filtered.filter(s => s.distance !== null && s.distance <= currentShopRadius);
+      }
 
-      // 3. Sort from minimum to longest distance
-      currentFilteredShops.sort((a, b) => {
+      // 4. SORT: Strictly Minimum to Longest Distance
+      filtered.sort((a, b) => {
         if (a.distance !== null && b.distance !== null) {
           return a.distance - b.distance;
         }
-        return a.name.localeCompare(b.name);
+        if (a.distance !== null) return -1;
+        if (b.distance !== null) return 1;
+        return (a.name || '').localeCompare(b.name || '');
       });
 
+      currentFilteredShops = filtered;
+
+      // Update counter badge
       if (countLabel) {
-        countLabel.textContent = `Showing ${currentFilteredShops.length} authorized location${currentFilteredShops.length === 1 ? '' : 's'}${currentShopUserLocation ? ' (sorted by closest distance)' : ''}`;
+        if (filtered.length === 1) {
+          countLabel.innerText = '1 authorized location';
+        } else {
+          countLabel.innerText = `${filtered.length} authorized locations`;
+        }
       }
 
-      // 4. Render cards in left column
+      if (!cardsList) return;
       cardsList.innerHTML = '';
-      if (currentFilteredShops.length === 0) {
+
+      if (filtered.length === 0) {
         cardsList.innerHTML = `
           <div class="p-8 text-center bg-white rounded-3xl border border-gray-100 shadow-xs">
-            <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-            <h3 class="text-base font-bold text-gray-800">No shops found in this area</h3>
-            <p class="text-xs text-gray-500 mt-1 max-w-xs mx-auto">Try expanding the search radius or reset to view all island-wide dealers.</p>
-            <button onclick="setShopRadius(null)" class="mt-4 px-4 py-2 rounded-xl bg-[#00A651] text-white font-bold text-xs cursor-pointer">View All Sri Lanka Dealers</button>
+            <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-3 text-gray-400">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            </div>
+            <h3 class="text-base font-bold text-gray-800">No stores found</h3>
+            <p class="text-xs text-gray-500 mt-1 max-w-xs mx-auto">No authorized dealer locations currently match this criteria. Please check back soon or contact our customer hotline.</p>
+            <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+              <a href="tel:+94773774340" class="px-4 py-2 rounded-xl bg-[#00A651] text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-sm hover:bg-[#008F45] transition-colors">
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                <span>Call Hotline (077 377 4340)</span>
+              </a>
+              <button onclick="setShopRadius(null)" class="px-3.5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-[#231F20] font-bold text-xs cursor-pointer">
+                Clear Filters
+              </button>
+            </div>
           </div>
         `;
       } else {
-        currentFilteredShops.forEach(shop => {
+        filtered.forEach(shop => {
           const isSelected = selectedShopId === shop.id;
           const card = document.createElement('div');
           card.className = `p-5 rounded-3xl transition-all duration-200 cursor-pointer border ${
@@ -2930,11 +2868,12 @@
           card.innerHTML = `
             <div class="flex items-start justify-between gap-3">
               <div>
-                <div class="flex items-center gap-2 mb-1">
+                <div class="flex items-center gap-2 mb-1 flex-wrap">
                   <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-[#074626] text-[10px] font-extrabold uppercase tracking-wider">
                     <svg class="w-3 h-3 text-[#00A651]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     Authorized Dealer
                   </span>
+                  ${shop.isFlagship ? `<span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-extrabold uppercase tracking-wider">Flagship</span>` : ''}
                   ${distBadge}
                 </div>
                 <h3 class="text-base font-extrabold text-[#231F20] tracking-tight group-hover:text-[#00A651]">${shop.name}</h3>
@@ -2979,7 +2918,7 @@
         });
       }
 
-      // 5. Update Map Markers
+      // Update Map Markers
       updateShopMarkersOnMap();
     }
 
@@ -3012,6 +2951,14 @@
         if (legendUserDot) legendUserDot.classList.add('hidden');
       }
 
+      if (currentFilteredShops.length === 0) {
+        if (!currentShopUserLocation) {
+          shopMapInstance.setCenter({ lat: 6.9271, lng: 79.8612 });
+          shopMapInstance.setZoom(8);
+        }
+        return;
+      }
+
       const bounds = new google.maps.LatLngBounds();
       if (currentShopUserLocation) {
         bounds.extend(new google.maps.LatLng(currentShopUserLocation.lat, currentShopUserLocation.lng));
@@ -3031,180 +2978,183 @@
         });
 
         marker.addListener('click', () => {
-          selectedShopId = shop.id;
-          renderShopsCardsHighlight();
-          const infoHtml = `
-            <div style="padding: 10px; max-width: 250px; font-family: sans-serif;">
-              <span style="background-color: #EBF8F2; color: #00A651; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 999px;">Authorized Dealer</span>
-              <h4 style="margin: 4px 0; font-size: 14px; font-weight: bold; color: #231F20;">${shop.name}</h4>
-              <p style="margin: 0 0 6px 0; font-size: 12px; color: #555;">${shop.address}, ${shop.city}</p>
-              <div style="display: flex; gap: 8px; margin-top: 6px;">
-                <a href="https://www.google.com/maps/dir/?api=1&destination=${shop.lat},${shop.lng}" target="_blank" style="background-color: #00A651; color: white; text-decoration: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: bold;">Directions</a>
-                <a href="tel:${shop.phone}" style="background-color: #F3F4F6; color: #231F20; text-decoration: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: bold;">Call</a>
-              </div>
-            </div>
-          `;
-          shopInfoWindow.setContent(infoHtml);
-          shopInfoWindow.open(shopMapInstance, marker);
+          focusShopOnMap(shop);
         });
 
         shopMarkersList.push(marker);
       });
 
-      fitMapToShops();
-    }
-
-    function fitMapToShops() {
-      if (!shopMapInstance || !window.google || !window.google.maps) return;
-      if (currentFilteredShops.length === 0) return;
-
-      const bounds = new google.maps.LatLngBounds();
-      if (currentShopUserLocation) {
-        bounds.extend(new google.maps.LatLng(currentShopUserLocation.lat, currentShopUserLocation.lng));
-      }
-      currentFilteredShops.forEach(s => bounds.extend(new google.maps.LatLng(s.lat, s.lng)));
-      shopMapInstance.fitBounds(bounds);
-
-      if (currentFilteredShops.length === 1 && currentShopUserLocation) {
-        shopMapInstance.setZoom(13);
-      }
-    }
-
-    function renderShopsCardsHighlight() {
-      const cards = document.getElementById('shops-cards-list')?.children;
-      if (!cards) return;
-      for (let i = 0; i < cards.length; i++) {
-        const card = cards[i];
-        if (currentFilteredShops[i] && currentFilteredShops[i].id === selectedShopId) {
-          card.className = "p-5 rounded-3xl transition-all duration-200 cursor-pointer border bg-[#EBF8F2] border-[#00A651] shadow-md ring-2 ring-[#00A651]/20";
-        } else {
-          card.className = "p-5 rounded-3xl transition-all duration-200 cursor-pointer border bg-white hover:bg-gray-50/80 border-gray-100 shadow-xs hover:border-gray-200";
+      if (currentFilteredShops.length === 1 && !currentShopUserLocation) {
+        shopMapInstance.setCenter({ lat: currentFilteredShops[0].lat, lng: currentFilteredShops[0].lng });
+        shopMapInstance.setZoom(14);
+      } else if (currentFilteredShops.length > 0) {
+        shopMapInstance.fitBounds(bounds);
+        if (shopMapInstance.getZoom() > 15) {
+          shopMapInstance.setZoom(15);
         }
       }
     }
 
     function focusShopOnMap(shop) {
       selectedShopId = shop.id;
-      renderShopsCardsHighlight();
-      if (!shopMapInstance || !window.google?.maps) return;
+      if (!shopMapInstance || !window.google || !window.google.maps) return;
 
       shopMapInstance.panTo({ lat: shop.lat, lng: shop.lng });
       shopMapInstance.setZoom(15);
 
-      const marker = shopMarkersList.find(m => 
-        Math.abs(m.getPosition().lat() - shop.lat) < 0.0001 &&
-        Math.abs(m.getPosition().lng() - shop.lng) < 0.0001
-      );
-      if (marker && shopInfoWindow) {
-        google.maps.event.trigger(marker, 'click');
+      if (shopInfoWindow) {
+        shopInfoWindow.setContent(`
+          <div style="font-family: 'Plus Jakarta Sans', sans-serif; padding: 6px; max-width: 250px;">
+            <div style="font-size: 11px; font-weight: 800; color: #00A651; text-transform: uppercase; margin-bottom: 2px;">JADE Authorized Dealer</div>
+            <div style="font-size: 14px; font-weight: 800; color: #231F20; margin-bottom: 4px;">${shop.name}</div>
+            <div style="font-size: 12px; color: #4B5563; margin-bottom: 6px;">${shop.address}</div>
+            <div style="font-size: 12px; font-weight: 700; color: #231F20; margin-bottom: 8px;">📞 ${shop.phone}</div>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${shop.lat},${shop.lng}" target="_blank" style="display: block; text-align: center; background: #00A651; color: #ffffff; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; text-decoration: none;">Get Directions ↗</a>
+          </div>
+        `);
+        const marker = shopMarkersList.find(m => 
+          Math.abs(m.getPosition().lat() - shop.lat) < 0.0001 &&
+          Math.abs(m.getPosition().lng() - shop.lng) < 0.0001
+        );
+        if (marker) {
+          shopInfoWindow.open(shopMapInstance, marker);
+        }
       }
+      renderShops();
     }
 
-    // Geolocation: "Locate Me"
+    // Set Radius Filter (5, 10, 20 or null for All)
+    function setShopRadius(radiusKm) {
+      currentShopRadius = radiusKm;
+      document.querySelectorAll('#radius-buttons-container .radius-btn').forEach(btn => {
+        const r = btn.getAttribute('data-radius');
+        const matches = (radiusKm === null && r === 'null') || (Number(r) === radiusKm);
+        if (matches) {
+          btn.className = 'radius-btn px-3 py-1.5 rounded-xl font-bold transition-all text-xs bg-[#00A651] text-white shadow-sm';
+        } else {
+          btn.className = 'radius-btn px-3 py-1.5 rounded-xl font-bold transition-all text-xs bg-gray-100 text-gray-600 hover:bg-gray-200';
+        }
+      });
+      renderShops();
+    }
+
+    // GPS Auto-detect
     function locateUserPosition() {
-      const btn = document.getElementById('btn-locate-me');
-      const text = document.getElementById('locate-text');
-      const icon = document.getElementById('locate-icon');
-      const status = document.getElementById('shop-location-status');
-      const errBox = document.getElementById('shop-location-error');
+      const locateBtn = document.getElementById('btn-locate-me');
+      const locateText = document.getElementById('locate-text');
+      const statusEl = document.getElementById('shop-location-status');
+      const errorEl = document.getElementById('shop-location-error');
 
       if (!navigator.geolocation) {
-        if (errBox) {
-          errBox.textContent = "Geolocation is not supported by your browser.";
-          errBox.classList.remove('hidden');
+        if (errorEl) {
+          errorEl.innerText = 'Geolocation is not supported by your browser.';
+          errorEl.classList.remove('hidden');
         }
         return;
       }
 
-      if (text) text.textContent = "Locating...";
-      if (icon) icon.classList.add('animate-spin');
-      if (errBox) errBox.classList.add('hidden');
+      if (locateText) locateText.innerText = 'Detecting...';
+      if (statusEl) statusEl.classList.add('hidden');
+      if (errorEl) errorEl.classList.add('hidden');
 
       navigator.geolocation.getCurrentPosition(
-        pos => {
-          if (text) text.textContent = "Located!";
-          if (icon) icon.classList.remove('animate-spin');
+        (pos) => {
+          if (locateText) locateText.innerText = 'Located!';
+          setTimeout(() => { if (locateText) locateText.innerText = 'Locate Me'; }, 2500);
 
           currentShopUserLocation = {
             lat: pos.coords.latitude,
             lng: pos.coords.longitude,
-            name: "Current GPS Position"
+            name: 'Your GPS Location'
           };
 
-          if (status) {
-            status.textContent = `📍 Located at [${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}]. Showing closest shops within ${currentShopRadius || 'All'} km.`;
-            status.classList.remove('hidden');
+          if (statusEl) {
+            statusEl.innerHTML = `📍 GPS Active: Sorted by closest distance to you (${currentShopRadius ? currentShopRadius + 'km radius' : 'All Island'}).`;
+            statusEl.classList.remove('hidden');
+          }
+
+          if (shopMapInstance) {
+            shopMapInstance.panTo({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+            shopMapInstance.setZoom(12);
           }
 
           renderShops();
         },
-        err => {
-          if (text) text.textContent = "Locate Me";
-          if (icon) icon.classList.remove('animate-spin');
-          if (errBox) {
-            errBox.textContent = "Could not access GPS location. Please allow location permissions or search by city name.";
-            errBox.classList.remove('hidden');
+        (err) => {
+          if (locateText) locateText.innerText = 'Locate Me';
+          if (errorEl) {
+            errorEl.innerText = 'Unable to detect location. Please type your city in the search bar.';
+            errorEl.classList.remove('hidden');
           }
         },
         { timeout: 10000, enableHighAccuracy: true }
       );
     }
 
-    // Search by city or location string
+    // City Coordinates Map for Instant Search Matching
+    const SEARCH_CITY_COORDS = {
+      colombo: { lat: 6.9271, lng: 79.8612, name: 'Colombo' },
+      nugegoda: { lat: 6.8649, lng: 79.8997, name: 'Nugegoda' },
+      dehiwala: { lat: 6.8415, lng: 79.8680, name: 'Dehiwala' },
+      kandy: { lat: 7.2936, lng: 80.6382, name: 'Kandy' },
+      galle: { lat: 6.0367, lng: 80.2170, name: 'Galle' },
+      matara: { lat: 5.9496, lng: 80.5469, name: 'Matara' },
+      kurunegala: { lat: 7.4863, lng: 80.3647, name: 'Kurunegala' },
+      negombo: { lat: 7.2083, lng: 79.8358, name: 'Negombo' },
+      gampaha: { lat: 7.0840, lng: 79.9939, name: 'Gampaha' },
+      kadawatha: { lat: 7.0016, lng: 79.9535, name: 'Kadawatha' },
+      battaramulla: { lat: 6.9012, lng: 79.9180, name: 'Battaramulla' },
+      jaffna: { lat: 9.6615, lng: 80.0255, name: 'Jaffna' },
+      anuradhapura: { lat: 8.3114, lng: 80.4037, name: 'Anuradhapura' },
+      badulla: { lat: 6.9934, lng: 81.0550, name: 'Badulla' },
+      ratnapura: { lat: 6.6828, lng: 80.4005, name: 'Ratnapura' }
+    };
+
     function handleShopSearch(e) {
       if (e) e.preventDefault();
       const input = document.getElementById('shop-search-input');
-      const query = (input?.value || '').trim();
-      currentSearchText = query;
+      const statusEl = document.getElementById('shop-location-status');
+      const errorEl = document.getElementById('shop-location-error');
+      if (!input) return;
 
-      const errBox = document.getElementById('shop-location-error');
-      const status = document.getElementById('shop-location-status');
+      const q = input.value.trim().toLowerCase();
+      currentSearchText = q;
 
-      if (!query) {
-        currentSearchText = '';
-        renderShops();
-        return;
-      }
+      if (errorEl) errorEl.classList.add('hidden');
 
-      const q = query.toLowerCase();
-      const CITY_COORDS = {
-        colombo: { lat: 6.9271, lng: 79.8612 },
-        nugegoda: { lat: 6.8649, lng: 79.8997 },
-        dehiwala: { lat: 6.8415, lng: 79.868 },
-        battaramulla: { lat: 6.9012, lng: 79.918 },
-        gampaha: { lat: 7.084, lng: 79.9939 },
-        kadawatha: { lat: 7.0016, lng: 79.9535 },
-        negombo: { lat: 7.2083, lng: 79.8358 },
-        kandy: { lat: 7.2936, lng: 80.6382 },
-        galle: { lat: 6.0367, lng: 80.217 },
-        matara: { lat: 5.9496, lng: 80.5469 },
-        kurunegala: { lat: 7.4863, lng: 80.3647 },
-        jaffna: { lat: 9.6615, lng: 80.0255 }
-      };
-
-      let matched = null;
-      for (const [key, coords] of Object.entries(CITY_COORDS)) {
+      let matchedCity = null;
+      for (const [key, coords] of Object.entries(SEARCH_CITY_COORDS)) {
         if (q.includes(key)) {
-          matched = coords;
+          matchedCity = coords;
           break;
         }
       }
 
-      if (matched) {
-        currentShopUserLocation = { ...matched, name: query };
-        if (status) {
-          status.textContent = `📍 Search reference: ${query}. Distance calculated from ${query}.`;
-          status.classList.remove('hidden');
+      if (matchedCity) {
+        currentShopUserLocation = {
+          lat: matchedCity.lat,
+          lng: matchedCity.lng,
+          name: matchedCity.name
+        };
+        if (statusEl) {
+          statusEl.innerHTML = `📍 Searching near <strong>${matchedCity.name}</strong> • Nearest shops first.`;
+          statusEl.classList.remove('hidden');
         }
-        if (errBox) errBox.classList.add('hidden');
+        if (shopMapInstance) {
+          shopMapInstance.panTo({ lat: matchedCity.lat, lng: matchedCity.lng });
+          shopMapInstance.setZoom(12);
+        }
       } else {
         const allShops = getLocalShops();
-        const found = allShops.find(s => s.city.toLowerCase().includes(q) || s.name.toLowerCase().includes(q));
+        const found = allShops.find(s => 
+          (s.city || '').toLowerCase().includes(q) ||
+          (s.name || '').toLowerCase().includes(q)
+        );
         if (found) {
           currentShopUserLocation = { lat: found.lat, lng: found.lng, name: found.city };
-          if (status) {
-            status.textContent = `📍 Focused on ${found.city}.`;
-            status.classList.remove('hidden');
+          if (statusEl) {
+            statusEl.innerHTML = `📍 Showing results matching "<strong>${input.value.trim()}</strong>"`;
+            statusEl.classList.remove('hidden');
           }
         }
       }
@@ -3212,149 +3162,38 @@
       renderShops();
     }
 
-    // Set Radius Filter: 5, 10, 20 or null
-    function setShopRadius(radiusVal) {
-      currentShopRadius = radiusVal;
-      document.querySelectorAll('.radius-btn').forEach(btn => {
-        const btnVal = btn.getAttribute('data-radius');
-        const isSelected = (radiusVal === null && btnVal === 'null') || (Number(btnVal) === radiusVal);
-        if (isSelected) {
-          btn.className = "radius-btn px-3 py-1.5 rounded-xl font-bold transition-all text-xs bg-[#00A651] text-white shadow-sm";
-        } else {
-          btn.className = "radius-btn px-3 py-1.5 rounded-xl font-bold transition-all text-xs bg-gray-100 text-gray-600 hover:bg-gray-200";
+    // REAL-TIME SYNCHRONIZATION WITH ADMIN DASHBOARD
+    // 1. BroadcastChannel message listener (Instant 0ms sync)
+    if (shopsBroadcastChannel) {
+      shopsBroadcastChannel.onmessage = (event) => {
+        if (event.data && event.data.type === 'SHOPS_CHANGED') {
+          handleRealtimeShopsSync();
         }
-      });
-      renderShops();
-    }
-
-    // =========================================================================
-    // ADMIN DASHBOARD SHOP CRUD (Modal & LocalStorage Sync)
-    // =========================================================================
-    function openShopAdminModal() {
-      const modal = document.getElementById('shop-admin-modal');
-      if (modal) {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        renderAdminShopsTable();
-      }
-    }
-
-    function closeShopAdminModal() {
-      const modal = document.getElementById('shop-admin-modal');
-      if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-      }
-      renderShops();
-    }
-
-    function renderAdminShopsTable() {
-      const shops = getLocalShops();
-      const container = document.getElementById('admin-shops-table-container');
-      const badge = document.getElementById('admin-total-shops-badge');
-      if (badge) badge.textContent = `${shops.length} Shops`;
-      if (!container) return;
-
-      if (shops.length === 0) {
-        container.innerHTML = `<div class="p-4 text-center text-xs text-gray-400">No registered shops yet. Add one above.</div>`;
-        return;
-      }
-
-      container.innerHTML = '';
-      shops.forEach(shop => {
-        const row = document.createElement('div');
-        row.className = "p-3 flex items-center justify-between gap-3 text-xs hover:bg-gray-50 transition-colors";
-        row.innerHTML = `
-          <div>
-            <div class="font-bold text-[#231F20]">${shop.name}</div>
-            <div class="text-[11px] text-gray-500">${shop.address}, <strong>${shop.city}</strong> • ${shop.phone}</div>
-            <div class="text-[10px] text-gray-400 font-mono mt-0.5">${shop.lat.toFixed(4)}, ${shop.lng.toFixed(4)}</div>
-          </div>
-          <button onclick="deleteShopLocal(${shop.id})" class="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer" title="Delete Shop">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-          </button>
-        `;
-        container.appendChild(row);
-      });
-    }
-
-    function handleAddNewShop(e) {
-      e.preventDefault();
-      const name = document.getElementById('admin-shop-name')?.value.trim();
-      const address = document.getElementById('admin-shop-address')?.value.trim();
-      const city = document.getElementById('admin-shop-city')?.value.trim();
-      const phone = document.getElementById('admin-shop-phone')?.value.trim();
-      const lat = parseFloat(document.getElementById('admin-shop-lat')?.value) || 6.9271;
-      const lng = parseFloat(document.getElementById('admin-shop-lng')?.value) || 79.8612;
-      const hours = document.getElementById('admin-shop-hours')?.value.trim();
-
-      if (!name || !address || !phone) {
-        alert("Please provide Shop Name, Address, and Phone.");
-        return;
-      }
-
-      const shops = getLocalShops();
-      const nextId = shops.reduce((max, s) => s.id > max ? s.id : max, 0) + 1;
-      const newShop = {
-        id: nextId,
-        name,
-        address,
-        city: city || "Sri Lanka",
-        phone,
-        lat,
-        lng,
-        openingHours: hours || "Mon - Sat: 8:00 AM - 6:00 PM",
-        isAuthorizedDealer: true
       };
-
-      shops.unshift(newShop);
-      saveLocalShops(shops);
-      renderAdminShopsTable();
-
-      // Reset form
-      document.getElementById('admin-shop-name').value = '';
-      document.getElementById('admin-shop-address').value = '';
-      document.getElementById('admin-shop-city').value = '';
-      document.getElementById('admin-shop-phone').value = '';
-
-      alert(`Shop "${name}" has been registered successfully!`);
     }
 
-    function deleteShopLocal(shopId) {
-      if (!confirm("Are you sure you want to delete this shop?")) return;
-      const shops = getLocalShops().filter(s => s.id !== shopId);
-      saveLocalShops(shops);
-      renderAdminShopsTable();
-    }
+    // 2. Storage event listener (Cross-tab/window sync)
+    window.addEventListener('storage', (event) => {
+      if (event.key === SHOPS_STORAGE_KEY) {
+        handleRealtimeShopsSync();
+      }
+    });
 
-    function resetDefaultShops() {
-      if (!confirm("Reset all shops back to the 10 official JADE Coatings dealers?")) return;
-      saveLocalShops(DEFAULT_SHOPS_DATA);
-      renderAdminShopsTable();
-      renderShops();
-    }
+    // 3. Periodic fallback poll every 800ms
+    setInterval(() => {
+      handleRealtimeShopsSync();
+    }, 800);
 
-    function handleAdminCityPreset(cityName) {
-      const CITY_PRESETS = {
-        colombo: { lat: 6.9271, lng: 79.8612 },
-        nugegoda: { lat: 6.8649, lng: 79.8997 },
-        dehiwala: { lat: 6.8415, lng: 79.8680 },
-        gampaha: { lat: 7.0840, lng: 79.9939 },
-        negombo: { lat: 7.2083, lng: 79.8358 },
-        kandy: { lat: 7.2936, lng: 80.6382 },
-        galle: { lat: 6.0367, lng: 80.2170 },
-        matara: { lat: 5.9496, lng: 80.5469 },
-        kurunegala: { lat: 7.4863, lng: 80.3647 }
-      };
-      const key = (cityName || '').toLowerCase().trim();
-      if (CITY_PRESETS[key]) {
-        document.getElementById('admin-shop-lat').value = CITY_PRESETS[key].lat;
-        document.getElementById('admin-shop-lng').value = CITY_PRESETS[key].lng;
-        document.getElementById('admin-shop-city').value = cityName;
+    function handleRealtimeShopsSync() {
+      const currentList = getLocalShops();
+      const currentJson = JSON.stringify(currentList);
+      if (currentJson !== lastKnownShopsSnapshot) {
+        lastKnownShopsSnapshot = currentJson;
+        renderShops();
       }
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', () => {
       if (window.location.hash === '#admin') {
         window.location.href = 'admin.html';
         return;

@@ -448,10 +448,10 @@
           <!-- Bottom Utilities -->
           <div class="mt-6 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
             <button
-              onclick="resetToFactoryDefaultShops()"
+              onclick="clearAllShops()"
               class="text-slate-500 hover:text-red-600 font-semibold underline transition-colors cursor-pointer"
             >
-              Reset to 10 Default Sri Lankan Dealers
+              Clear All Stores
             </button>
 
             <span class="text-slate-400">
@@ -482,119 +482,24 @@
   <!-- JAVASCRIPT: AUTHENTICATION & SHOP DIRECTORY CRUD -->
   <!-- ========================================================================= -->
   <script>
-    // 10 Official Sri Lankan Baseline Stores
-    const FACTORY_DEFAULT_SHOPS = [
-      {
-        id: "shop-1",
-        name: "Colour Max Flagship Center - Colombo 03",
-        address: "312 Galle Road, Kollupitiya, Colombo 03",
-        city: "Colombo",
-        phone: "+94 11 257 6890",
-        lat: 6.9034,
-        lng: 79.8519,
-        hours: "Mon - Sat: 8:00 AM - 6:30 PM",
-        isFlagship: true
-      },
-      {
-        id: "shop-2",
-        name: "JADE Experience Studio - Nawala",
-        address: "184 Nawala Road, Nugegoda",
-        city: "Nugegoda",
-        phone: "+94 11 280 5410",
-        lat: 6.8867,
-        lng: 79.8894,
-        hours: "Mon - Sat: 8:30 AM - 7:00 PM",
-        isFlagship: true
-      },
-      {
-        id: "shop-3",
-        name: "City Hardware & Paint Depot - Dehiwala",
-        address: "78 Hill Street, Dehiwala-Mount Lavinia",
-        city: "Dehiwala",
-        phone: "+94 11 273 1192",
-        lat: 6.8402,
-        lng: 79.8715,
-        hours: "Mon - Sat: 8:00 AM - 6:00 PM",
-        isFlagship: false
-      },
-      {
-        id: "shop-4",
-        name: "Gampaha Premium Coatings & Color Hub",
-        address: "45 Yakkala Road, Gampaha",
-        city: "Gampaha",
-        phone: "+94 33 222 4190",
-        lat: 7.0897,
-        lng: 79.9932,
-        hours: "Mon - Sat: 7:30 AM - 6:00 PM",
-        isFlagship: false
-      },
-      {
-        id: "shop-5",
-        name: "Lanka Hardware World - Kadawatha",
-        address: "220 Kandy Road, Kadawatha",
-        city: "Kadawatha",
-        phone: "+94 11 292 6540",
-        lat: 7.0016,
-        lng: 79.9535,
-        hours: "Mon - Sat: 8:00 AM - 6:00 PM",
-        isFlagship: false
-      },
-      {
-        id: "shop-6",
-        name: "Coastal Coatings & Marine Stores - Negombo",
-        address: "102 Main Street, Negombo",
-        city: "Negombo",
-        phone: "+94 31 223 8812",
-        lat: 7.2083,
-        lng: 79.8358,
-        hours: "Mon - Sat: 8:00 AM - 6:30 PM",
-        isFlagship: false
-      },
-      {
-        id: "shop-7",
-        name: "Hill Country Paint Center - Kandy",
-        address: "88 William Gopallawa Mawatha, Kandy",
-        city: "Kandy",
-        phone: "+94 81 220 3450",
-        lat: 7.2882,
-        lng: 80.6276,
-        hours: "Mon - Sat: 8:30 AM - 6:00 PM",
-        isFlagship: true
-      },
-      {
-        id: "shop-8",
-        name: "Southern Color Mart - Galle",
-        address: "56 Wakwella Road, Galle",
-        city: "Galle",
-        phone: "+94 91 224 5510",
-        lat: 6.0418,
-        lng: 80.2185,
-        hours: "Mon - Sat: 8:00 AM - 6:00 PM",
-        isFlagship: false
-      },
-      {
-        id: "shop-9",
-        name: "Matara Central Hardware & Paints",
-        address: "34 Anagarika Dharmapala Mawatha, Matara",
-        city: "Matara",
-        phone: "+94 41 222 7180",
-        lat: 5.9496,
-        lng: 80.5469,
-        hours: "Mon - Sat: 8:00 AM - 6:00 PM",
-        isFlagship: false
-      },
-      {
-        id: "shop-10",
-        name: "Wayamba Trade & Paint Mart - Kurunegala",
-        address: "14 Colombo Road, Kurunegala",
-        city: "Kurunegala",
-        phone: "+94 37 222 9015",
-        lat: 7.4831,
-        lng: 80.3625,
-        hours: "Mon - Sat: 8:00 AM - 6:00 PM",
-        isFlagship: false
+    // Baseline: Empty (all shops added by Admin)
+    const FACTORY_DEFAULT_SHOPS = [];
+    const SHOPS_STORAGE_KEY = 'jade_custom_shops_v2';
+
+    // Clear legacy obsolete baseline key if exists
+    try {
+      if (localStorage.getItem('jade_custom_shops')) {
+        localStorage.removeItem('jade_custom_shops');
       }
-    ];
+    } catch(e) {}
+
+    // BroadcastChannel for instant zero-latency cross-tab sync with public site
+    let shopsBroadcastChannel = null;
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        shopsBroadcastChannel = new BroadcastChannel('jade_shops_sync_v2');
+      }
+    } catch(e) {}
 
     // City coordinate presets for quick addition
     const CITY_PRESETS = {
@@ -618,25 +523,46 @@
     // Retrieve shops from localStorage or fallback
     function getStoredShops() {
       try {
-        const stored = localStorage.getItem('jade_custom_shops');
+        const stored = localStorage.getItem(SHOPS_STORAGE_KEY);
         if (stored) {
           const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          if (Array.isArray(parsed)) return parsed;
         }
       } catch (e) {
         console.error("Storage error:", e);
       }
-      return FACTORY_DEFAULT_SHOPS;
+      return [];
     }
 
-    // Save shops to localStorage
+    // Save shops to localStorage & broadcast live to public website
     function saveStoredShops(shopsList) {
       try {
-        localStorage.setItem('jade_custom_shops', JSON.stringify(shopsList));
+        localStorage.setItem(SHOPS_STORAGE_KEY, JSON.stringify(shopsList));
+        if (shopsBroadcastChannel) {
+          shopsBroadcastChannel.postMessage({ type: 'SHOPS_CHANGED', shops: shopsList, timestamp: Date.now() });
+        }
       } catch (e) {
         console.error("Storage save error:", e);
       }
     }
+
+    // Listen for storage events in case another admin tab changed something
+    if (shopsBroadcastChannel) {
+      shopsBroadcastChannel.onmessage = (event) => {
+        if (event.data && event.data.type === 'SHOPS_CHANGED') {
+          allShops = getStoredShops();
+          updateMetrics();
+          renderShopsList();
+        }
+      };
+    }
+    window.addEventListener('storage', (event) => {
+      if (event.key === SHOPS_STORAGE_KEY) {
+        allShops = getStoredShops();
+        updateMetrics();
+        renderShopsList();
+      }
+    });
 
     // AUTHENTICATION LOGIC
     function checkAuth() {
@@ -727,6 +653,19 @@
           (s.city || '').toLowerCase().includes(currentSearchQuery) ||
           (s.address || '').toLowerCase().includes(currentSearchQuery)
         );
+      }
+
+      if (allShops.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-16 px-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-[#00A651] flex items-center justify-center mx-auto mb-3">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            </div>
+            <p class="text-base font-bold text-slate-800">No stores in network yet</p>
+            <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Use the <strong>Add New Shop</strong> form on the left to register your first authorized dealer. It will live update on the website immediately!</p>
+          </div>
+        `;
+        return;
       }
 
       if (filtered.length === 0) {
@@ -842,18 +781,22 @@
       showToast(`Removed "${shopName}" from directory.`, "info");
     }
 
-    // Reset to Default Stores
-    function resetToFactoryDefaultShops() {
-      if (!confirm("Are you sure you want to restore the 10 authentic Sri Lankan baseline dealers? Any custom added shops will be overwritten.")) {
+    // Clear all stores
+    function clearAllShops() {
+      if (allShops.length === 0) {
+        showToast("Directory is already empty.", "info");
+        return;
+      }
+      if (!confirm("Are you sure you want to remove ALL shops from the public website?")) {
         return;
       }
 
-      allShops = [...FACTORY_DEFAULT_SHOPS];
+      allShops = [];
       saveStoredShops(allShops);
       updateMetrics();
       renderShopsList();
 
-      showToast("Reset to 10 official baseline stores.", "success");
+      showToast("Cleared all shops from live directory.", "info");
     }
 
     // City Preset helper

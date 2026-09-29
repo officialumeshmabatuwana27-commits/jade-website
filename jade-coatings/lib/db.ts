@@ -108,7 +108,7 @@ let _initialized = false;
 export function ensureInit() {
   if (_initialized) return;
   const db = readDb();
-  if (!db.seeded || !db.shops || db.shops.length === 0) {
+  if (!db.seeded) {
     seedData(db);
   }
   _initialized = true;
@@ -809,128 +809,7 @@ function seedData(db: DbSchema) {
   ];
 
   db.contacts = [];
-  db.shops = [
-    {
-      id: 1,
-      name: "JADE Coatings Flagship & Technical Center",
-      address: "No. 45 Nawala Road, Nugegoda",
-      city: "Colombo",
-      district: "Colombo",
-      phone: "+94 11 282 8990",
-      lat: 6.8858,
-      lng: 79.8893,
-      openingHours: "Mon - Sat: 8:00 AM - 6:00 PM",
-      isAuthorizedDealer: true,
-    },
-    {
-      id: 2,
-      name: "Colombo City Paint & Hardware Mart",
-      address: "182 Sri Sangaraja Mawatha, Colombo 10",
-      city: "Colombo",
-      district: "Colombo",
-      phone: "+94 11 243 1245",
-      lat: 6.9360,
-      lng: 79.8650,
-      openingHours: "Mon - Sat: 8:30 AM - 6:30 PM",
-      isAuthorizedDealer: true,
-    },
-    {
-      id: 3,
-      name: "Southern Coatings & Timber Care",
-      address: "240 Galle Road, Dehiwala-Mount Lavinia",
-      city: "Mount Lavinia",
-      district: "Colombo",
-      phone: "+94 11 273 4567",
-      lat: 6.8415,
-      lng: 79.8680,
-      openingHours: "Mon - Sat: 8:00 AM - 6:00 PM",
-      isAuthorizedDealer: true,
-    },
-    {
-      id: 4,
-      name: "Metro Paint Depot & Builders Supply",
-      address: "112 Parliament Road, Battaramulla",
-      city: "Battaramulla",
-      district: "Colombo",
-      phone: "+94 11 288 3412",
-      lat: 6.9012,
-      lng: 79.9180,
-      openingHours: "Mon - Sat: 8:00 AM - 5:30 PM",
-      isAuthorizedDealer: true,
-    },
-    {
-      id: 5,
-      name: "Kadawatha Hardware & Color World",
-      address: "48 Kandy Road, Kadawatha",
-      city: "Kadawatha",
-      district: "Gampaha",
-      phone: "+94 33 222 5678",
-      lat: 7.0016,
-      lng: 79.9535,
-      openingHours: "Mon - Sun: 7:30 AM - 7:00 PM",
-      isAuthorizedDealer: true,
-    },
-    {
-      id: 6,
-      name: "Negombo Marine & Exterior Coatings",
-      address: "74 Main Street, Negombo",
-      city: "Negombo",
-      district: "Gampaha",
-      phone: "+94 31 223 8901",
-      lat: 7.2083,
-      lng: 79.8358,
-      openingHours: "Mon - Sat: 8:00 AM - 6:00 PM",
-      isAuthorizedDealer: true,
-    },
-    {
-      id: 7,
-      name: "Kandy Central Paint & Hardware Stores",
-      address: "58 Dalada Veediya, Kandy",
-      city: "Kandy",
-      district: "Kandy",
-      phone: "+94 81 222 3456",
-      lat: 7.2936,
-      lng: 80.6382,
-      openingHours: "Mon - Sat: 8:30 AM - 6:00 PM",
-      isAuthorizedDealer: true,
-    },
-    {
-      id: 8,
-      name: "Galle Southern Paints & Construction",
-      address: "120 Matara Road, Galle",
-      city: "Galle",
-      district: "Galle",
-      phone: "+94 91 223 4512",
-      lat: 6.0367,
-      lng: 80.2170,
-      openingHours: "Mon - Sat: 8:00 AM - 6:00 PM",
-      isAuthorizedDealer: true,
-    },
-    {
-      id: 9,
-      name: "Ruhunu Paints & Hardware Supply",
-      address: "65 Anagarika Dharmapala Mawatha, Matara",
-      city: "Matara",
-      district: "Matara",
-      phone: "+94 41 222 6789",
-      lat: 5.9496,
-      lng: 80.5469,
-      openingHours: "Mon - Sat: 8:00 AM - 6:00 PM",
-      isAuthorizedDealer: true,
-    },
-    {
-      id: 10,
-      name: "Wayamba Paint & Industrial Coatings",
-      address: "32 Colombo Road, Kurunegala",
-      city: "Kurunegala",
-      district: "Kurunegala",
-      phone: "+94 37 222 1234",
-      lat: 7.4863,
-      lng: 80.3647,
-      openingHours: "Mon - Sat: 8:00 AM - 6:00 PM",
-      isAuthorizedDealer: true,
-    },
-  ];
+  db.shops = [];
   db.seeded = true;
   writeDb(db);
 }
