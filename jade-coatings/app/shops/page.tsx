@@ -375,10 +375,6 @@ export default function FindAShopPage() {
       <section className="bg-gradient-to-b from-[#032613] via-[#074626] to-[#0B0F17] text-white py-16 sm:py-20 relative overflow-hidden">
         <div className="absolute right-0 top-0 translate-x-1/4 -translate-y-1/4 w-96 h-96 bg-jade-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-jade-500/15 border border-jade-500/30 text-jade-300 text-xs sm:text-sm font-bold uppercase tracking-wider mb-4 shadow-sm">
-            <MapPin className="w-4 h-4 text-jade-400" />
-            Official Store Locator
-          </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
             Find a JADE Coatings Dealer Near You
           </h1>

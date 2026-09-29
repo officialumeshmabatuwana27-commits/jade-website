@@ -925,10 +925,6 @@
     <section class="bg-gradient-to-b from-[#032613] via-[#074626] to-[#0B0F17] text-white py-16 sm:py-20 relative overflow-hidden">
       <div class="absolute right-0 top-0 translate-x-1/4 -translate-y-1/4 w-96 h-96 bg-[#00A651]/10 rounded-full blur-3xl pointer-events-none"></div>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00A651]/20 border border-[#00A651]/40 text-[#00A651] text-xs sm:text-sm font-bold uppercase tracking-wider mb-4 shadow-sm">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-          Official Dealer Directory
-        </div>
         <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight">
           Find a JADE Coatings Dealer Near You
         </h1>
@@ -997,21 +993,9 @@
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <!-- Left: List of Stores (5 cols) -->
         <div class="lg:col-span-5 space-y-4">
-          <div class="flex items-center justify-between pb-2 border-b border-gray-200">
-            <div>
-              <h2 class="text-xl font-extrabold text-[#231F20]">Available Shops</h2>
-              <p id="shops-count-label" class="text-xs text-gray-500 mt-0.5">Showing authorized locations</p>
-            </div>
-
-            <!-- Admin Button to manage shops in preview/live -->
-            <button
-              onclick="openShopAdminModal()"
-              class="text-xs font-semibold text-[#00A651] hover:text-[#008F45] bg-[#EBF8F2] px-3 py-1.5 rounded-xl border border-emerald-200 flex items-center gap-1.5 transition-colors cursor-pointer"
-              title="Admin Panel: Add or Delete Shops"
-            >
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-              <span>Manage Shops</span>
-            </button>
+          <div class="pb-2 border-b border-gray-200">
+            <h2 class="text-xl font-extrabold text-[#231F20]">Available Shops</h2>
+            <p id="shops-count-label" class="text-xs text-gray-500 mt-0.5">Showing authorized locations</p>
           </div>
 
           <!-- Shops List Container -->
@@ -1139,112 +1123,6 @@
         <button onclick="closeProductModal()" class="px-5 py-2.5 rounded-full text-sm font-medium text-gray-600 hover:bg-gray-200/70 transition-colors">Close</button>
         <button id="modal-calc-btn" onclick="closeProductModal(); navigateTo('calculator');" class="px-6 py-2.5 rounded-full text-sm font-bold text-white bg-[#00A651] hover:bg-[#008F45] transition-colors shadow-md">Calculate Coverage</button>
         <button id="modal-inquire-btn" onclick="closeProductModal(); navigateTo('contact');" class="hidden px-6 py-2.5 rounded-full text-sm font-bold text-white bg-[#00A651] hover:bg-[#008F45] transition-colors shadow-md">Request Quote</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Shop Management Admin Modal (For in-browser Store CRUD) -->
-  <div id="shop-admin-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
-      <div class="p-6 border-b border-gray-100 flex items-center justify-between bg-[#EBF8F2]">
-        <div>
-          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#00A651] text-white text-[10px] font-bold uppercase tracking-wider mb-1">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
-            Admin Panel
-          </div>
-          <h3 class="text-xl font-extrabold text-[#231F20]">Manage Store Directory</h3>
-          <p class="text-xs text-gray-600 mt-0.5">Add new shops, update details, or delete locations.</p>
-        </div>
-        <button onclick="closeShopAdminModal()" class="p-2 rounded-xl text-gray-400 hover:text-[#231F20] hover:bg-white/80 cursor-pointer">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-
-      <div class="p-6 space-y-6">
-        <!-- Add New Shop Form -->
-        <div class="p-5 rounded-2xl bg-gray-50 border border-gray-200">
-          <h4 class="text-sm font-extrabold text-[#231F20] mb-3 flex items-center gap-1.5">
-            <svg class="w-4 h-4 text-[#00A651]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            Add New Shop / Authorized Dealer
-          </h4>
-          <form onsubmit="handleAddNewShop(event)" class="space-y-3.5 text-xs sm:text-sm">
-            <div>
-              <label class="block font-bold text-gray-700 mb-1">Shop / Dealer Name *</label>
-              <input type="text" id="admin-shop-name" required placeholder="e.g. Royal Hardware & Paint Center" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 bg-white text-[#231F20] text-xs sm:text-sm focus:outline-none focus:border-[#00A651]" />
-            </div>
-
-            <div>
-              <label class="block font-bold text-gray-700 mb-1">Street Address *</label>
-              <input type="text" id="admin-shop-address" required placeholder="e.g. 150 Galle Road, Kalutara" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 bg-white text-[#231F20] text-xs sm:text-sm focus:outline-none focus:border-[#00A651]" />
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label class="block font-bold text-gray-700 mb-1">City / Town *</label>
-                <input type="text" id="admin-shop-city" required placeholder="e.g. Kalutara" onchange="handleAdminCityPreset(this.value)" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 bg-white text-[#231F20] text-xs sm:text-sm focus:outline-none focus:border-[#00A651]" />
-              </div>
-              <div>
-                <label class="block font-bold text-gray-700 mb-1">Phone Number *</label>
-                <input type="text" id="admin-shop-phone" required placeholder="e.g. +94 34 222 3456 / 077 123 4567" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 bg-white text-[#231F20] text-xs sm:text-sm focus:outline-none focus:border-[#00A651]" />
-              </div>
-            </div>
-
-            <!-- Coordinates & Presets -->
-            <div class="p-3 rounded-xl bg-white border border-gray-200">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-xs font-bold text-gray-700 flex items-center gap-1">
-                  <svg class="w-3.5 h-3.5 text-[#00A651]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
-                  Coordinates (Lat & Lng)
-                </span>
-                <select onchange="handleAdminCityPreset(this.value)" class="text-[11px] font-semibold bg-gray-50 border border-gray-200 rounded-lg px-2 py-0.5 text-gray-700">
-                  <option value="">Quick City Preset...</option>
-                  <option value="Colombo">Colombo (6.9271, 79.8612)</option>
-                  <option value="Nugegoda">Nugegoda (6.8649, 79.8997)</option>
-                  <option value="Dehiwala">Dehiwala (6.8415, 79.8680)</option>
-                  <option value="Gampaha">Gampaha (7.0840, 79.9939)</option>
-                  <option value="Negombo">Negombo (7.2083, 79.8358)</option>
-                  <option value="Kandy">Kandy (7.2936, 80.6382)</option>
-                  <option value="Galle">Galle (6.0367, 80.2170)</option>
-                  <option value="Matara">Matara (5.9496, 80.5469)</option>
-                  <option value="Kurunegala">Kurunegala (7.4863, 80.3647)</option>
-                </select>
-              </div>
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="block text-[10px] text-gray-400 font-bold uppercase">Latitude</label>
-                  <input type="number" step="any" id="admin-shop-lat" required value="6.9271" class="w-full px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-mono" />
-                </div>
-                <div>
-                  <label class="block text-[10px] text-gray-400 font-bold uppercase">Longitude</label>
-                  <input type="number" step="any" id="admin-shop-lng" required value="79.8612" class="w-full px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-mono" />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label class="block font-bold text-gray-700 mb-1">Operating Hours</label>
-              <input type="text" id="admin-shop-hours" value="Mon - Sat: 8:00 AM - 6:00 PM" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 bg-white text-[#231F20] text-xs sm:text-sm focus:outline-none focus:border-[#00A651]" />
-            </div>
-
-            <button type="submit" class="w-full py-2.5 rounded-xl bg-[#00A651] hover:bg-[#008F45] text-white font-bold text-xs sm:text-sm shadow-md transition-all cursor-pointer">
-              + Save New Shop
-            </button>
-          </form>
-        </div>
-
-        <!-- Current Registered Shops Table -->
-        <div>
-          <h4 class="text-sm font-extrabold text-[#231F20] mb-2.5 flex items-center justify-between">
-            <span>Existing Shops Directory</span>
-            <span id="admin-total-shops-badge" class="text-xs font-bold text-[#00A651] bg-[#EBF8F2] px-2.5 py-0.5 rounded-full">0 Shops</span>
-          </h4>
-          <div id="admin-shops-table-container" class="max-h-60 overflow-y-auto divide-y divide-gray-100 border border-gray-200 rounded-2xl"></div>
-        </div>
-      </div>
-
-      <div class="p-4 border-t border-gray-100 bg-gray-50 rounded-b-3xl flex justify-between items-center">
-        <button onclick="resetDefaultShops()" class="text-xs text-gray-500 hover:text-red-600 underline font-medium cursor-pointer">Reset to 10 Default Shops</button>
-        <button onclick="closeShopAdminModal()" class="px-5 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 text-[#231F20] font-bold text-xs cursor-pointer">Done</button>
       </div>
     </div>
   </div>
@@ -1385,7 +1263,7 @@
       </div>
 
       <div class="mt-12 pt-8 border-t border-gray-800 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-400 gap-4">
-        <p>© 2015–2026 JADE Coatings (Colour Max Lanka Pvt Ltd). All Rights Reserved.</p>
+        <p>© 2015–2026 JADE Coatings (Colour Max Lanka Pvt Ltd). All Rights Reserved. • <a href="admin.html" class="text-gray-500 hover:text-emerald-400 transition-colors">Admin Portal</a></p>
         <p class="flex items-center gap-1.5 text-xs text-emerald-400">
           <span class="w-2 h-2 rounded-full bg-[#00A651]"></span>
           <span>Official Water-Based Eco Coating Solutions</span>
@@ -2032,6 +1910,10 @@
 
     // 2. NAVIGATION
     function navigateTo(pageId) {
+      if (pageId === 'admin') {
+        window.location.href = 'admin.html';
+        return;
+      }
       document.querySelectorAll('.page-tab').forEach(tab => tab.classList.remove('active'));
       const activeTab = document.getElementById('page-' + pageId);
       if (activeTab) {
@@ -3473,6 +3355,10 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      if (window.location.hash === '#admin') {
+        window.location.href = 'admin.html';
+        return;
+      }
       renderProducts();
       renderProjectsAndClients();
       runCalculator();

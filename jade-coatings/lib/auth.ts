@@ -12,8 +12,8 @@ function getSecretKey(): string {
 }
 
 export function getAdminCredentials() {
-  const username = process.env.ADMIN_USERNAME || "admin";
-  const password = process.env.ADMIN_PASSWORD || "adminjade2026";
+  const username = process.env.ADMIN_USERNAME || "Admin";
+  const password = process.env.ADMIN_PASSWORD || "admin@1234";
   return { username, password };
 }
 

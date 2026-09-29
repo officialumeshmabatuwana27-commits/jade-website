@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     const credentials = getAdminCredentials();
 
     if (
-      username !== credentials.username ||
+      username?.trim().toLowerCase() !== credentials.username.toLowerCase() ||
       password !== credentials.password
     ) {
       return NextResponse.json(

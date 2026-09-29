@@ -159,7 +159,7 @@ function LoginForm() {
           {/* Quick Help Info */}
           <div className="mt-6 pt-5 border-t border-white/10 text-center text-xs text-white/50">
             <span>Default access credentials: </span>
-            <span className="font-mono text-jade-300">admin</span> / <span className="font-mono text-jade-300">adminjade2026</span>
+            <span className="font-mono text-jade-300">Admin</span> / <span className="font-mono text-jade-300">admin@1234</span>
           </div>
         </div>
 
