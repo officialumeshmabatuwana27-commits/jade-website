@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Package,
   Building2,
+  MapPin,
   ExternalLink,
   LogOut,
   Menu,
@@ -42,6 +43,12 @@ export default function AdminSidebar({ username }: AdminSidebarProps) {
       name: "Projects & Clients",
       href: "/admin/projects",
       icon: Building2,
+      exact: false,
+    },
+    {
+      name: "Shop & Dealer Directory",
+      href: "/admin/shops",
+      icon: MapPin,
       exact: false,
     },
   ];

@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { getProducts, getProjects } from "@/lib/db";
+import { getProducts, getProjects, getShops } from "@/lib/db";
 import {
   Package,
   Building2,
   Users,
+  MapPin,
   ShieldCheck,
   Plus,
   ArrowRight,
@@ -17,6 +18,7 @@ export const dynamic = "force-dynamic";
 export default function AdminDashboardPage() {
   const products = getProducts();
   const { projects, clients } = getProjects();
+  const shops = getShops();
 
   const domesticCount = products.filter((p) => p.division === "Domestic").length;
   const industrialCount = products.filter((p) => p.division === "Industrial").length;
@@ -53,7 +55,14 @@ export default function AdminDashboardPage() {
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs sm:text-sm border border-white/15 transition-all"
             >
               <Plus className="w-4 h-4" />
-              Add Project / Client
+              Add Project
+            </Link>
+            <Link
+              href="/admin/shops"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs sm:text-sm border border-white/15 transition-all"
+            >
+              <MapPin className="w-4 h-4" />
+              Add Shop / Dealer
             </Link>
           </div>
         </div>
@@ -131,6 +140,31 @@ export default function AdminDashboardPage() {
           <div className="mt-3 pt-3 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between text-xs text-jade-600 dark:text-jade-400">
             <Link href="/admin/projects" className="hover:underline flex items-center gap-1 font-medium">
               Manage clients <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Authorized Dealers */}
+        <div className="bg-white dark:bg-[#131B26] p-5 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-charcoal/60 dark:text-slate-400">
+              Shops & Dealers
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+              <MapPin className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-3xl font-black text-charcoal dark:text-white">
+              {shops.length}
+            </span>
+            <span className="text-xs text-charcoal/50 dark:text-slate-400">
+              Active Locations
+            </span>
+          </div>
+          <div className="mt-3 pt-3 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between text-xs text-jade-600 dark:text-jade-400">
+            <Link href="/admin/shops" className="hover:underline flex items-center gap-1 font-medium">
+              Manage shops <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
         </div>

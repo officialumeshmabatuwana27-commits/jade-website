@@ -50,10 +50,24 @@ export interface Contact {
   created_at: string;
 }
 
+export interface Shop {
+  id: number;
+  name: string;
+  address: string;
+  city: string;
+  district: string;
+  phone: string;
+  lat: number;
+  lng: number;
+  openingHours: string;
+  isAuthorizedDealer: boolean;
+}
+
 interface DbSchema {
   products: Product[];
   projects: Project[];
   contacts: Contact[];
+  shops: Shop[];
   seeded: boolean;
 }
 
@@ -71,11 +85,15 @@ function ensureDir() {
 function readDb(): DbSchema {
   ensureDir();
   if (!fs.existsSync(DB_PATH)) {
-    const empty: DbSchema = { products: [], projects: [], contacts: [], seeded: false };
+    const empty: DbSchema = { products: [], projects: [], contacts: [], shops: [], seeded: false };
     fs.writeFileSync(DB_PATH, JSON.stringify(empty, null, 2));
     return empty;
   }
-  return JSON.parse(fs.readFileSync(DB_PATH, "utf-8")) as DbSchema;
+  const data = JSON.parse(fs.readFileSync(DB_PATH, "utf-8")) as DbSchema;
+  if (!data.shops) {
+    data.shops = [];
+  }
+  return data;
 }
 
 function writeDb(data: DbSchema) {
@@ -90,7 +108,7 @@ let _initialized = false;
 export function ensureInit() {
   if (_initialized) return;
   const db = readDb();
-  if (!db.seeded) {
+  if (!db.seeded || !db.shops || db.shops.length === 0) {
     seedData(db);
   }
   _initialized = true;
@@ -214,6 +232,54 @@ export function saveContact(data: Omit<Contact, "id" | "created_at">): void {
   };
   db.contacts.push(newContact);
   writeDb(db);
+}
+
+// ─── Shop Management API ───────────────────────────────────────────────────
+
+export function getShops(): Shop[] {
+  ensureInit();
+  return readDb().shops || [];
+}
+
+export function getShopById(id: number): Shop | undefined {
+  ensureInit();
+  return (readDb().shops || []).find((s) => s.id === id);
+}
+
+export function createShop(data: Omit<Shop, "id">): Shop {
+  ensureInit();
+  const db = readDb();
+  if (!db.shops) db.shops = [];
+  const nextId = db.shops.reduce((max, s) => (s.id > max ? s.id : max), 0) + 1;
+  const newShop: Shop = {
+    ...data,
+    id: nextId,
+  };
+  db.shops.push(newShop);
+  writeDb(db);
+  return newShop;
+}
+
+export function updateShop(id: number, data: Partial<Shop>): Shop | null {
+  ensureInit();
+  const db = readDb();
+  if (!db.shops) db.shops = [];
+  const index = db.shops.findIndex((s) => s.id === id);
+  if (index === -1) return null;
+  db.shops[index] = { ...db.shops[index], ...data, id };
+  writeDb(db);
+  return db.shops[index];
+}
+
+export function deleteShop(id: number): boolean {
+  ensureInit();
+  const db = readDb();
+  if (!db.shops) db.shops = [];
+  const index = db.shops.findIndex((s) => s.id === id);
+  if (index === -1) return false;
+  db.shops.splice(index, 1);
+  writeDb(db);
+  return true;
 }
 
 // ─── Seed Data ───────────────────────────────────────────────────────────────
@@ -743,6 +809,128 @@ function seedData(db: DbSchema) {
   ];
 
   db.contacts = [];
+  db.shops = [
+    {
+      id: 1,
+      name: "JADE Coatings Flagship & Technical Center",
+      address: "No. 45 Nawala Road, Nugegoda",
+      city: "Colombo",
+      district: "Colombo",
+      phone: "+94 11 282 8990",
+      lat: 6.8858,
+      lng: 79.8893,
+      openingHours: "Mon - Sat: 8:00 AM - 6:00 PM",
+      isAuthorizedDealer: true,
+    },
+    {
+      id: 2,
+      name: "Colombo City Paint & Hardware Mart",
+      address: "182 Sri Sangaraja Mawatha, Colombo 10",
+      city: "Colombo",
+      district: "Colombo",
+      phone: "+94 11 243 1245",
+      lat: 6.9360,
+      lng: 79.8650,
+      openingHours: "Mon - Sat: 8:30 AM - 6:30 PM",
+      isAuthorizedDealer: true,
+    },
+    {
+      id: 3,
+      name: "Southern Coatings & Timber Care",
+      address: "240 Galle Road, Dehiwala-Mount Lavinia",
+      city: "Mount Lavinia",
+      district: "Colombo",
+      phone: "+94 11 273 4567",
+      lat: 6.8415,
+      lng: 79.8680,
+      openingHours: "Mon - Sat: 8:00 AM - 6:00 PM",
+      isAuthorizedDealer: true,
+    },
+    {
+      id: 4,
+      name: "Metro Paint Depot & Builders Supply",
+      address: "112 Parliament Road, Battaramulla",
+      city: "Battaramulla",
+      district: "Colombo",
+      phone: "+94 11 288 3412",
+      lat: 6.9012,
+      lng: 79.9180,
+      openingHours: "Mon - Sat: 8:00 AM - 5:30 PM",
+      isAuthorizedDealer: true,
+    },
+    {
+      id: 5,
+      name: "Kadawatha Hardware & Color World",
+      address: "48 Kandy Road, Kadawatha",
+      city: "Kadawatha",
+      district: "Gampaha",
+      phone: "+94 33 222 5678",
+      lat: 7.0016,
+      lng: 79.9535,
+      openingHours: "Mon - Sun: 7:30 AM - 7:00 PM",
+      isAuthorizedDealer: true,
+    },
+    {
+      id: 6,
+      name: "Negombo Marine & Exterior Coatings",
+      address: "74 Main Street, Negombo",
+      city: "Negombo",
+      district: "Gampaha",
+      phone: "+94 31 223 8901",
+      lat: 7.2083,
+      lng: 79.8358,
+      openingHours: "Mon - Sat: 8:00 AM - 6:00 PM",
+      isAuthorizedDealer: true,
+    },
+    {
+      id: 7,
+      name: "Kandy Central Paint & Hardware Stores",
+      address: "58 Dalada Veediya, Kandy",
+      city: "Kandy",
+      district: "Kandy",
+      phone: "+94 81 222 3456",
+      lat: 7.2936,
+      lng: 80.6382,
+      openingHours: "Mon - Sat: 8:30 AM - 6:00 PM",
+      isAuthorizedDealer: true,
+    },
+    {
+      id: 8,
+      name: "Galle Southern Paints & Construction",
+      address: "120 Matara Road, Galle",
+      city: "Galle",
+      district: "Galle",
+      phone: "+94 91 223 4512",
+      lat: 6.0367,
+      lng: 80.2170,
+      openingHours: "Mon - Sat: 8:00 AM - 6:00 PM",
+      isAuthorizedDealer: true,
+    },
+    {
+      id: 9,
+      name: "Ruhunu Paints & Hardware Supply",
+      address: "65 Anagarika Dharmapala Mawatha, Matara",
+      city: "Matara",
+      district: "Matara",
+      phone: "+94 41 222 6789",
+      lat: 5.9496,
+      lng: 80.5469,
+      openingHours: "Mon - Sat: 8:00 AM - 6:00 PM",
+      isAuthorizedDealer: true,
+    },
+    {
+      id: 10,
+      name: "Wayamba Paint & Industrial Coatings",
+      address: "32 Colombo Road, Kurunegala",
+      city: "Kurunegala",
+      district: "Kurunegala",
+      phone: "+94 37 222 1234",
+      lat: 7.4863,
+      lng: 80.3647,
+      openingHours: "Mon - Sat: 8:00 AM - 6:00 PM",
+      isAuthorizedDealer: true,
+    },
+  ];
   db.seeded = true;
   writeDb(db);
 }

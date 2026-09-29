@@ -11,6 +11,7 @@ const navLinks = [
   { href: "/products", label: "Products" },
   { href: "/projects", label: "Project & Clients" },
   { href: "/contact", label: "Contact Us" },
+  { href: "/shops", label: "Find a Shop" },
   { href: "/calculator", label: "Coverage Calculator" },
 ];
 
