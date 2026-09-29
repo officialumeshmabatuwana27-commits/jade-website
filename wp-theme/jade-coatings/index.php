@@ -14,7 +14,7 @@
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JADE Coatings — Premium Water-Based Solutions | Official Interactive Demo</title>
+  <title>JADE Coatings | Advanced Water-based Solutions</title>
   <link rel="icon" type="image/png" href="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

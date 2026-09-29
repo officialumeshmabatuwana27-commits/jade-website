@@ -10,10 +10,14 @@ if (!defined('ABSPATH')) {
 }
 
 function jade_coatings_setup() {
-    add_theme_support('title-tag');
     add_theme_support('post-thumbnails');
 }
 add_action('after_setup_theme', 'jade_coatings_setup');
+
+// Document title filter
+add_filter('pre_get_document_title', function() {
+    return 'JADE Coatings | Advanced Water-based Solutions';
+});
 
 // Allow /dealers-admin or /admin-portal page routing
 add_action('init', function() {
