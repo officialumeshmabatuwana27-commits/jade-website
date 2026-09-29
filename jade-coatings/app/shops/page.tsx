@@ -264,27 +264,44 @@ export default function FindAShopPage() {
       return;
     }
 
+    const applyCoords = (lat: number, lng: number, name: string) => {
+      setUserLocation({ lat, lng, name });
+      setLocating(false);
+      setGeoError(null);
+      if (googleMapInstance.current) {
+        googleMapInstance.current.panTo({ lat, lng });
+        googleMapInstance.current.setZoom(12);
+      }
+    };
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const coords = {
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-          name: "Current GPS Location",
-        };
-        setUserLocation(coords);
-        setLocating(false);
-
-        if (googleMapInstance.current) {
-          googleMapInstance.current.panTo({ lat: coords.lat, lng: coords.lng });
-          googleMapInstance.current.setZoom(12);
-        }
+        applyCoords(pos.coords.latitude, pos.coords.longitude, "Current Location");
       },
-      (err) => {
-        console.warn("Geolocation error:", err.message);
-        setGeoError("Unable to retrieve your location. Please check browser permissions or search manually.");
-        setLocating(false);
+      () => {
+        navigator.geolocation.getCurrentPosition(
+          (pos2) => {
+            applyCoords(pos2.coords.latitude, pos2.coords.longitude, "Current Location");
+          },
+          () => {
+            fetch("https://ipapi.co/json/")
+              .then((res) => res.json())
+              .then((data) => {
+                if (data && data.latitude && data.longitude) {
+                  applyCoords(data.latitude, data.longitude, data.city ? `${data.city}, Sri Lanka` : "Sri Lanka");
+                } else {
+                  throw new Error("No IP coords");
+                }
+              })
+              .catch(() => {
+                setGeoError("Location detection unavailable. Please enter your city in the search bar.");
+                setLocating(false);
+              });
+          },
+          { timeout: 7000, enableHighAccuracy: false, maximumAge: 300000 }
+        );
       },
-      { timeout: 10000, enableHighAccuracy: true }
+      { timeout: 6000, enableHighAccuracy: true, maximumAge: 60000 }
     );
   };
 
@@ -371,108 +388,110 @@ export default function FindAShopPage() {
 
   return (
     <div className="min-h-screen bg-cream">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-b from-[#032613] via-[#074626] to-[#0B0F17] text-white py-16 sm:py-20 relative overflow-hidden">
-        <div className="absolute right-0 top-0 translate-x-1/4 -translate-y-1/4 w-96 h-96 bg-jade-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
-            Find a JADE Coatings Dealer Near You
-          </h1>
-          <p className="mt-3 text-sm sm:text-base text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            Locate authorized paint centers, hardware distributors, and retail partners across Sri Lanka. Type your location or use auto-detect to find the closest store with instant driving directions.
-          </p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12">
+        {/* Compact Top Header & Controls */}
+        <div className="bg-white rounded-3xl p-5 sm:p-7 shadow-sm border border-gray-100 mb-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 mb-4 border-b border-gray-100">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-black text-charcoal tracking-tight flex items-center gap-2">
+                <span className="w-8 h-8 rounded-xl bg-jade-100 text-jade-700 flex items-center justify-center">
+                  <MapPin className="w-4 h-4 text-jade-600" />
+                </span>
+                <span>Find a Shop & Dealer Directory</span>
+              </h1>
+              <p className="text-xs text-gray-500 mt-1">
+                Locate authorized JADE paint centers with live GPS distance and turn-by-turn driving directions.
+              </p>
+            </div>
+          </div>
 
           {/* Search & Location Control Box */}
-          <div className="mt-8 max-w-3xl mx-auto bg-white rounded-3xl p-3 sm:p-4 shadow-2xl border border-gray-100 text-charcoal">
-            <form
-              onSubmit={handleSearchSubmit}
-              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5"
-            >
-              <div className="relative flex-1">
-                <Search className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Enter city, town or district (e.g. Colombo, Kandy, Galle)..."
-                  className="w-full pl-11 pr-4 py-3 rounded-2xl bg-gray-50 border border-gray-200 text-sm font-medium focus:outline-none focus:border-jade-500 focus:ring-2 focus:ring-jade-500/20 text-[#231F20]"
+          <form
+            onSubmit={handleSearchSubmit}
+            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5"
+          >
+            <div className="relative flex-1">
+              <Search className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Enter city, town or district (e.g. Colombo, Kandy, Galle)..."
+                className="w-full pl-11 pr-4 py-3 rounded-2xl bg-gray-50 border border-gray-200 text-sm font-medium focus:outline-none focus:border-jade-500 focus:ring-2 focus:ring-jade-500/20 text-[#231F20]"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleLocateMe}
+                disabled={locating}
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-[#EBF8F2] hover:bg-emerald-100 text-jade-700 font-bold text-xs sm:text-sm transition-all border border-jade-300 shadow-xs active:scale-95 disabled:opacity-50"
+                title="Locate my current position"
+              >
+                <Crosshair
+                  className={`w-4 h-4 text-jade-600 ${
+                    locating ? "animate-spin text-jade-700" : ""
+                  }`}
                 />
-              </div>
+                <span>{locating ? "Locating..." : "Locate Me"}</span>
+              </button>
 
-              <div className="flex items-center gap-2">
+              <button
+                type="submit"
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-jade-500 hover:bg-jade-600 text-white font-bold text-xs sm:text-sm transition-all shadow-md shadow-jade-600/30 hover:scale-105 active:scale-95"
+              >
+                Search
+              </button>
+            </div>
+          </form>
+
+          {/* Radius Filter Pills */}
+          <div className="mt-4 pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-1.5 text-gray-500 font-medium">
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span>Search Radius:</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {[
+                { label: "5 km", val: 5 },
+                { label: "10 km", val: 10 },
+                { label: "20 km", val: 20 },
+                { label: "All Island", val: null },
+              ].map((r) => (
                 <button
-                  type="button"
-                  onClick={handleLocateMe}
-                  disabled={locating}
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-[#EBF8F2] hover:bg-emerald-100 text-jade-700 font-bold text-xs sm:text-sm transition-all border border-jade-300 shadow-xs active:scale-95 disabled:opacity-50"
-                  title="Locate my current position"
+                  key={String(r.val)}
+                  onClick={() => setSelectedRadius(r.val)}
+                  className={`px-3 py-1.5 rounded-xl font-bold transition-all text-xs ${
+                    selectedRadius === r.val
+                      ? "bg-jade-500 text-white shadow-sm"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
                 >
-                  <Crosshair
-                    className={`w-4 h-4 text-jade-600 ${
-                      locating ? "animate-spin text-jade-700" : ""
-                    }`}
-                  />
-                  <span>{locating ? "Locating..." : "Locate Me"}</span>
+                  {r.label}
                 </button>
-
-                <button
-                  type="submit"
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-jade-500 hover:bg-jade-600 text-white font-bold text-xs sm:text-sm transition-all shadow-md shadow-jade-600/30 hover:scale-105 active:scale-95"
-                >
-                  Search
-                </button>
-              </div>
-            </form>
-
-            {/* Radius Filter Pills */}
-            <div className="mt-4 pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-1.5 text-gray-500 font-medium">
-                <SlidersHorizontal className="w-3.5 h-3.5" />
-                <span>Search Radius:</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {[
-                  { label: "5 km", val: 5 },
-                  { label: "10 km", val: 10 },
-                  { label: "20 km", val: 20 },
-                  { label: "All Island", val: null },
-                ].map((r) => (
-                  <button
-                    key={String(r.val)}
-                    onClick={() => setSelectedRadius(r.val)}
-                    className={`px-3 py-1.5 rounded-xl font-bold transition-all text-xs ${
-                      selectedRadius === r.val
-                        ? "bg-jade-500 text-white shadow-sm"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    {r.label}
-                  </button>
-                ))}
-              </div>
+              ))}
             </div>
           </div>
 
           {/* Feedback & Notice */}
           {geoError && (
-            <div className="mt-4 max-w-xl mx-auto flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-200 text-xs text-left">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            <div className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-50 border border-amber-300 text-amber-800 text-xs text-left">
+              <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
               <span>{geoError}</span>
             </div>
           )}
 
           {userLocation && (
-            <div className="mt-3 text-xs text-jade-300 font-medium">
+            <div className="mt-3 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-jade-800 font-medium">
               📍 Active reference location: <strong>{userLocation.name || `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`}</strong>
               {selectedRadius && ` • Showing shops within ${selectedRadius} km`}
             </div>
           )}
         </div>
-      </section>
 
-      {/* Main Content: Split List and Google Map */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+        {/* Main Content: Split List and Google Map */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Column: Shops List (5 cols) */}
           <div className="lg:col-span-5 space-y-4">

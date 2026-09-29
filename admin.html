@@ -178,9 +178,9 @@
             </a>
 
             <div class="hidden md:flex items-center gap-2 pl-4 border-l border-slate-200">
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[#074626] text-xs font-bold">
+              <span id="admin-cloud-indicator" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[#074626] text-xs font-bold">
                 <span class="w-2 h-2 rounded-full bg-[#00A651] animate-pulse"></span>
-                Staff Verified
+                Online Cloud Database Synced
               </span>
             </div>
           </div>
@@ -485,15 +485,9 @@
     // Baseline: Empty (all shops added by Admin)
     const FACTORY_DEFAULT_SHOPS = [];
     const SHOPS_STORAGE_KEY = 'jade_custom_shops_v2';
+    const CLOUD_DB_ENDPOINT = 'https://api.restful-api.dev/objects/ff808181a09d98f701a0eb98eaf53bcd';
 
-    // Clear legacy obsolete baseline key if exists
-    try {
-      if (localStorage.getItem('jade_custom_shops')) {
-        localStorage.removeItem('jade_custom_shops');
-      }
-    } catch(e) {}
-
-    // BroadcastChannel for instant zero-latency cross-tab sync with public site
+    // BroadcastChannel for instant cross-tab sync
     let shopsBroadcastChannel = null;
     try {
       if (typeof BroadcastChannel !== 'undefined') {
@@ -520,7 +514,6 @@
       ratnapura: { lat: 6.6828, lng: 80.4005 }
     };
 
-    // Retrieve shops from localStorage or fallback
     function getStoredShops() {
       try {
         const stored = localStorage.getItem(SHOPS_STORAGE_KEY);
@@ -534,19 +527,80 @@
       return [];
     }
 
-    // Save shops to localStorage & broadcast live to public website
-    function saveStoredShops(shopsList) {
+    // Save shops to both localStorage (cache) AND online cloud database (cross-device)
+    async function saveStoredShops(shopsList) {
+      // 1. Immediate local cache
       try {
         localStorage.setItem(SHOPS_STORAGE_KEY, JSON.stringify(shopsList));
         if (shopsBroadcastChannel) {
           shopsBroadcastChannel.postMessage({ type: 'SHOPS_CHANGED', shops: shopsList, timestamp: Date.now() });
         }
-      } catch (e) {
-        console.error("Storage save error:", e);
+      } catch (e) {}
+
+      // 2. Save to online cloud database for multi-device access
+      setCloudSyncIndicator('saving');
+      try {
+        const payload = {
+          name: 'JADE_COATINGS_SHOPS_DIRECTORY_2026',
+          data: { shops: shopsList }
+        };
+        const res = await fetch(CLOUD_DB_ENDPOINT, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          setCloudSyncIndicator('connected');
+          return true;
+        }
+      } catch (err) {
+        console.error('Cloud save failed:', err);
+        setCloudSyncIndicator('error');
+      }
+      return false;
+    }
+
+    // Fetch initial fresh data from online cloud database
+    async function loadCloudShopsData() {
+      setCloudSyncIndicator('syncing');
+      try {
+        const res = await fetch(CLOUD_DB_ENDPOINT);
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.data && Array.isArray(json.data.shops)) {
+            allShops = json.data.shops;
+            localStorage.setItem(SHOPS_STORAGE_KEY, JSON.stringify(allShops));
+            updateMetrics();
+            renderShopsList();
+            setCloudSyncIndicator('connected');
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Cloud fetch offline, falling back to local cache:', err);
+      }
+      allShops = getStoredShops();
+      updateMetrics();
+      renderShopsList();
+      setCloudSyncIndicator('cached');
+    }
+
+    function setCloudSyncIndicator(status) {
+      const el = document.getElementById('admin-cloud-indicator');
+      if (!el) return;
+      if (status === 'connected') {
+        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-[#00A651] animate-pulse"></span><span>Online Cloud Database Synced</span>';
+        el.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[#074626] text-xs font-bold';
+      } else if (status === 'saving') {
+        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-blue-500 animate-spin"></span><span>Saving to Cloud...</span>';
+        el.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold';
+      } else if (status === 'syncing') {
+        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span><span>Syncing Cloud...</span>';
+        el.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold';
       }
     }
 
-    // Listen for storage events in case another admin tab changed something
+    // Cross-tab and storage listeners
     if (shopsBroadcastChannel) {
       shopsBroadcastChannel.onmessage = (event) => {
         if (event.data && event.data.type === 'SHOPS_CHANGED') {
@@ -626,6 +680,7 @@
       allShops = getStoredShops();
       updateMetrics();
       renderShopsList();
+      loadCloudShopsData();
     }
 
     function updateMetrics() {
