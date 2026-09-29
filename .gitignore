@@ -28,3 +28,7 @@ yarn-error.log*
 # System files
 .DS_Store
 Thumbs.db
+
+# WordPress generated zips & duplicate theme assets
+*.zip
+wp-theme/jade-coatings/assests/

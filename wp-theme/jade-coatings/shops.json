@@ -1,0 +1,15 @@
+{
+  "shops": [
+    {
+      "id": "shop-1790661535348",
+      "name": "Aruna Traders",
+      "city": "Gampaha",
+      "address": "2A/1, Naiwala road, Pethiyagoda",
+      "phone": "0332238508",
+      "lat": 7.135431603491652,
+      "lng": 80.00047914976884,
+      "hours": "Mon - Sat: 9:00 AM - 7:00 PM",
+      "isFlagship": false
+    }
+  ]
+}

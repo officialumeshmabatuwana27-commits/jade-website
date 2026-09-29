@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | JADE Coatings Management System</title>
+  <link rel="icon" type="image/png" href="assests/Logo.png" onerror="this.href='Logo.png'">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- ========================================================================= -->
+  <!-- 1. AUTHENTICATION LOGIN VIEW (Protected Gate) -->
+  <!-- ========================================================================= -->
+  <div id="view-login" class="flex-grow flex items-center justify-center p-4 min-h-screen bg-gradient-to-br from-[#032613] via-[#074626] to-[#0A1017] relative overflow-hidden">
+    <!-- Ambient glowing orbs -->
+    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#00A651]/15 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-10 right-10 w-72 h-72 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+    <div class="w-full max-w-md relative z-10">
+      <!-- Brand Header -->
+      <div class="text-center mb-8">
+        <a href="index.html" class="inline-flex items-center gap-3 group">
+          <div class="w-13 h-13 rounded-2xl bg-gradient-to-tr from-[#00A651] to-emerald-400 p-0.5 shadow-xl shadow-black/40 group-hover:scale-105 transition-transform">
+            <div class="w-full h-full bg-white rounded-[14px] flex items-center justify-center p-1.5">
+              <img src="assests/Logo.png" onerror="this.src='Logo.png'" alt="JADE Coatings" class="h-9 w-auto object-contain">
+            </div>
+          </div>
+          <div class="text-left">
+            <span class="text-2xl font-black tracking-tight text-white block">
+              JADE<span class="text-[#00A651]">.</span>
+            </span>
+            <span class="text-[10px] tracking-widest uppercase font-bold text-emerald-400 block -mt-1">
+              Admin Portal
+            </span>
+          </div>
+        </a>
+        <div class="mt-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-white/90 text-xs font-semibold">
+          <svg class="w-3.5 h-3.5 text-[#00A651]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          <span>Authorized Management Access</span>
+        </div>
+      </div>
+
+      <!-- Login Card -->
+      <div class="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl text-white">
+        <div class="mb-6">
+          <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-white">
+            Sign In to CMS
+          </h2>
+          <p class="text-white/70 text-xs sm:text-sm mt-1">
+            Manage authorized dealer locations, store directories, and site configurations.
+          </p>
+        </div>
+
+        <!-- Error Notification -->
+        <div id="login-error" class="hidden mb-5 p-3.5 rounded-2xl bg-red-500/20 border border-red-500/40 text-red-200 text-xs sm:text-sm flex items-start gap-2.5">
+          <svg class="w-4 h-4 text-red-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          <span id="login-error-text">Invalid username or password.</span>
+        </div>
+
+        <form onsubmit="handleLoginSubmit(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-white/80 mb-1.5">
+              Username
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-white/40">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              </div>
+              <input
+                type="text"
+                id="login-username"
+                required
+                autocomplete="username"
+                placeholder="Enter admin username"
+                class="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-[#00A651] focus:border-transparent transition-all"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-white/80 mb-1.5">
+              Password
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-white/40">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              </div>
+              <input
+                type="password"
+                id="login-password"
+                required
+                autocomplete="current-password"
+                placeholder="••••••••••••"
+                class="w-full pl-10 pr-11 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-[#00A651] focus:border-transparent transition-all"
+              />
+              <button
+                type="button"
+                onclick="togglePasswordVisibility()"
+                class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-white/40 hover:text-white transition-colors cursor-pointer"
+                title="Toggle password visibility"
+              >
+                <svg id="eye-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            id="login-submit-btn"
+            class="w-full mt-3 py-3.5 px-4 bg-gradient-to-r from-[#00A651] to-emerald-600 hover:from-[#008F45] hover:to-emerald-700 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-black/40 hover:shadow-[#00A651]/25 transition-all cursor-pointer active:scale-95"
+          >
+            <span>Enter Dashboard</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </button>
+        </form>
+
+        <div class="mt-6 pt-5 border-t border-white/10 text-center text-xs text-white/50">
+          <span>Authorized Administrator Access Only</span>
+        </div>
+      </div>
+
+      <!-- Return link -->
+      <div class="text-center mt-6">
+        <a href="index.html" class="text-xs text-white/70 hover:text-white transition-colors font-medium inline-flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+          <span>Return to public website</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- 2. ADMIN DASHBOARD VIEW (Shown once authenticated) -->
+  <!-- ========================================================================= -->
+  <div id="view-dashboard" class="hidden flex-col flex-grow min-h-screen">
+    <!-- Top Global Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16 sm:h-20">
+          <!-- Logo & Portal Title -->
+          <div class="flex items-center gap-4">
+            <a href="index.html" class="flex items-center gap-3">
+              <div class="h-11 w-11 rounded-xl bg-slate-50 border border-slate-200 p-1 flex items-center justify-center">
+                <img src="assests/Logo.png" onerror="this.src='Logo.png'" alt="JADE Logo" class="h-8 w-auto object-contain">
+              </div>
+              <div>
+                <span class="text-lg font-black tracking-tight text-slate-900 block leading-tight">
+                  JADE<span class="text-[#00A651]">.</span> CMS
+                </span>
+                <span class="text-[10px] uppercase font-bold tracking-widest text-[#00A651] block">
+                  Admin Dashboard
+                </span>
+              </div>
+            </a>
+
+            <div class="hidden md:flex items-center gap-2 pl-4 border-l border-slate-200">
+              <span id="admin-cloud-indicator" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[#074626] text-xs font-bold">
+                <span class="w-2 h-2 rounded-full bg-[#00A651] animate-pulse"></span>
+                Online Cloud Database Synced
+              </span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center gap-2 sm:gap-3">
+            <a
+              href="index.html"
+              target="_blank"
+              class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors"
+            >
+              <span>Public Site</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            </a>
+
+            <a
+              href="index.html#shops"
+              target="_blank"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#074626] border border-emerald-200 text-xs font-bold transition-colors"
+            >
+              <svg class="w-3.5 h-3.5 text-[#00A651]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <span>Find a Shop Live</span>
+            </a>
+
+            <button
+              onclick="handleLogout()"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-bold transition-colors cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 flex-grow w-full">
+      <!-- Welcome Hero Banner -->
+      <div class="mb-8 p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-[#032613] via-[#074626] to-[#0A1017] text-white shadow-xl relative overflow-hidden">
+        <div class="absolute right-0 top-0 translate-x-1/4 -translate-y-1/4 w-80 h-80 bg-[#00A651]/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-emerald-300 text-xs font-bold mb-3 border border-white/10">
+              <span>Admin Console</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-black tracking-tight">
+              Shops & Dealer Management Portal
+            </h1>
+          </div>
+
+          <!-- Quick Metrics -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div class="bg-white/10 backdrop-blur-md rounded-2xl p-3.5 border border-white/10 text-center">
+              <span id="metric-total-shops" class="text-2xl font-black text-white block">0</span>
+              <span class="text-[10px] uppercase font-bold text-gray-300 tracking-wider">Active Shops</span>
+            </div>
+            <div class="bg-white/10 backdrop-blur-md rounded-2xl p-3.5 border border-white/10 text-center">
+              <span id="metric-total-cities" class="text-2xl font-black text-emerald-400 block">0</span>
+              <span class="text-[10px] uppercase font-bold text-gray-300 tracking-wider">Towns Covered</span>
+            </div>
+            <div class="bg-white/10 backdrop-blur-md rounded-2xl p-3.5 border border-white/10 text-center col-span-2 sm:col-span-1">
+              <span class="text-2xl font-black text-amber-400 block">100%</span>
+              <span class="text-[10px] uppercase font-bold text-gray-300 tracking-wider">GPS Verified</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Grid: Form + Stores Directory -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <!-- Left: Add New Shop Form (5 cols) -->
+        <div class="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-7 shadow-lg border border-slate-200">
+          <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-100">
+            <div>
+              <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">
+                <span class="w-7 h-7 rounded-xl bg-emerald-100 text-[#00A651] flex items-center justify-center">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                </span>
+                Add New Shop
+              </h2>
+              <p class="text-xs text-slate-500 mt-1">Directly registers dealer to public map locator.</p>
+            </div>
+          </div>
+
+          <form id="add-shop-form" onsubmit="handleAddNewShop(event)" class="space-y-4 text-xs sm:text-sm">
+            <!-- Shop Name -->
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">
+                Shop / Store Name <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="form-shop-name"
+                required
+                placeholder="e.g. Royal Hardware & Paint Center"
+                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-[#00A651] focus:ring-2 focus:ring-[#00A651]/20 transition-all font-medium"
+              />
+            </div>
+
+            <!-- City / Region & Quick Preset -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="block font-bold text-slate-700">
+                  City / Town <span class="text-red-500">*</span>
+                </label>
+                <span class="text-[10px] font-bold uppercase text-[#00A651]">Auto-Fills GPS Coordinates</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <input
+                  type="text"
+                  id="form-shop-city"
+                  required
+                  placeholder="e.g. Colombo, Kandy, Galle"
+                  onchange="applyCityPreset(this.value)"
+                  class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-[#00A651] transition-all font-medium"
+                />
+                <select
+                  id="form-city-presets"
+                  onchange="applyCityPreset(this.value)"
+                  class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 text-xs font-semibold focus:outline-none focus:border-[#00A651]"
+                >
+                  <option value="">⚡ Choose City Preset...</option>
+                  <option value="Colombo">Colombo</option>
+                  <option value="Nugegoda">Nugegoda</option>
+                  <option value="Dehiwala">Dehiwala</option>
+                  <option value="Gampaha">Gampaha</option>
+                  <option value="Negombo">Negombo</option>
+                  <option value="Kadawatha">Kadawatha</option>
+                  <option value="Battaramulla">Battaramulla</option>
+                  <option value="Kandy">Kandy</option>
+                  <option value="Galle">Galle</option>
+                  <option value="Matara">Matara</option>
+                  <option value="Kurunegala">Kurunegala</option>
+                  <option value="Jaffna">Jaffna</option>
+                  <option value="Anuradhapura">Anuradhapura</option>
+                  <option value="Badulla">Badulla</option>
+                  <option value="Ratnapura">Ratnapura</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Street Address -->
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">
+                Full Street Address <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="form-shop-address"
+                required
+                placeholder="e.g. 142 Galle Road, Bambalapitiya"
+                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-[#00A651] transition-all font-medium"
+              />
+            </div>
+
+            <!-- Phone Number -->
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">
+                Contact Phone / Hotline <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="form-shop-phone"
+                required
+                placeholder="e.g. +94 11 258 7412 / 077 123 4567"
+                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-[#00A651] transition-all font-medium"
+              />
+            </div>
+
+            <!-- Coordinates (Lat & Lng) -->
+            <div class="p-3.5 rounded-2xl bg-slate-100/70 border border-slate-200 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                  <svg class="w-4 h-4 text-[#00A651]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                  GPS Coordinates for Map Pin
+                </span>
+                <span class="text-[10px] text-slate-500">Mapbox / GPS WGS84</span>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Latitude</label>
+                  <input
+                    type="number"
+                    step="any"
+                    id="form-shop-lat"
+                    required
+                    value="6.9271"
+                    class="w-full px-3 py-1.5 rounded-xl border border-slate-300 bg-white font-mono text-xs focus:outline-none focus:border-[#00A651]"
+                  />
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Longitude</label>
+                  <input
+                    type="number"
+                    step="any"
+                    id="form-shop-lng"
+                    required
+                    value="79.8612"
+                    class="w-full px-3 py-1.5 rounded-xl border border-slate-300 bg-white font-mono text-xs focus:outline-none focus:border-[#00A651]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Operating Hours -->
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">
+                Operating Hours
+              </label>
+              <input
+                type="text"
+                id="form-shop-hours"
+                value="Mon - Sat: 8:00 AM - 6:00 PM"
+                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-[#00A651] transition-all font-medium"
+              />
+            </div>
+
+            <button
+              type="submit"
+              class="w-full mt-2 py-3 px-5 rounded-2xl bg-[#00A651] hover:bg-[#008F45] text-white font-bold text-sm shadow-md shadow-[#00A651]/25 hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Publish Shop to Live Website</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Right: Current Shops List & Management (7 cols) -->
+        <div class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-7 shadow-lg border border-slate-200">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b border-slate-100 gap-3">
+            <div>
+              <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">
+                <span>Active Store Directory</span>
+                <span id="badge-total-shops" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-[#074626]">
+                  0 Stores
+                </span>
+              </h2>
+              <p class="text-xs text-slate-500 mt-0.5">Click Delete to remove any store from the live site.</p>
+            </div>
+
+            <!-- Search Filter -->
+            <div class="relative w-full sm:w-64">
+              <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input
+                type="text"
+                id="search-admin-shops"
+                oninput="filterAdminShops(this.value)"
+                placeholder="Search shops by name or city..."
+                class="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium focus:outline-none focus:border-[#00A651] text-slate-800"
+              />
+            </div>
+          </div>
+
+          <!-- Shops List / Table -->
+          <div id="admin-shops-cards-list" class="space-y-3 max-h-[640px] overflow-y-auto pr-1.5 custom-scrollbar">
+            <!-- Dynamic shop cards injected here -->
+          </div>
+
+          <!-- Bottom Utilities -->
+          <div class="mt-6 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <button
+              onclick="clearAllShops()"
+              class="text-slate-500 hover:text-red-600 font-semibold underline transition-colors cursor-pointer"
+            >
+              Clear All Stores
+            </button>
+
+            <span class="text-slate-400">
+              Changes persist instantly across all visitors.
+            </span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
+      <div class="max-w-7xl mx-auto px-4">
+        <span>© 2015–2026 JADE Coatings (Colour Max Lanka Pvt Ltd). Dedicated Admin Management Portal.</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div id="toast-inner" class="flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-slate-900 text-white shadow-2xl text-xs font-bold border border-slate-700">
+      <svg id="toast-icon" class="w-4 h-4 text-[#00A651]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+      <span id="toast-message">Operation successful</span>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT: AUTHENTICATION & SHOP DIRECTORY CRUD -->
+  <!-- ========================================================================= -->
+  <script>
+    // Baseline: Empty (all shops added by Admin)
+    const FACTORY_DEFAULT_SHOPS = [];
+    const SHOPS_STORAGE_KEY = 'jade_custom_shops_v2';
+    const CLOUD_DB_ENDPOINT = 'https://api.npoint.io/249f9cb136e8d1c46893';
+
+    // BroadcastChannel for instant cross-tab sync
+    let shopsBroadcastChannel = null;
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        shopsBroadcastChannel = new BroadcastChannel('jade_shops_sync_v2');
+      }
+    } catch(e) {}
+
+    // City coordinate presets for quick addition
+    const CITY_PRESETS = {
+      colombo: { lat: 6.9271, lng: 79.8612 },
+      nugegoda: { lat: 6.8649, lng: 79.8997 },
+      dehiwala: { lat: 6.8415, lng: 79.8680 },
+      gampaha: { lat: 7.0840, lng: 79.9939 },
+      negombo: { lat: 7.2083, lng: 79.8358 },
+      kadawatha: { lat: 7.0016, lng: 79.9535 },
+      battaramulla: { lat: 6.9012, lng: 79.9180 },
+      kandy: { lat: 7.2936, lng: 80.6382 },
+      galle: { lat: 6.0367, lng: 80.2170 },
+      matara: { lat: 5.9496, lng: 80.5469 },
+      kurunegala: { lat: 7.4863, lng: 80.3647 },
+      jaffna: { lat: 9.6615, lng: 80.0255 },
+      anuradhapura: { lat: 8.3114, lng: 80.4037 },
+      badulla: { lat: 6.9934, lng: 81.0550 },
+      ratnapura: { lat: 6.6828, lng: 80.4005 }
+    };
+
+    function getStoredShops() {
+      try {
+        const stored = localStorage.getItem(SHOPS_STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      } catch (e) {
+        console.error("Storage error:", e);
+      }
+      return [];
+    }
+
+    // Save shops to both localStorage (cache) AND online cloud database (cross-device)
+    async function saveStoredShops(shopsList) {
+      // 1. Immediate local cache
+      try {
+        localStorage.setItem(SHOPS_STORAGE_KEY, JSON.stringify(shopsList));
+        if (shopsBroadcastChannel) {
+          shopsBroadcastChannel.postMessage({ type: 'SHOPS_CHANGED', shops: shopsList, timestamp: Date.now() });
+        }
+      } catch (e) {}
+
+      // 2. Save to online cloud database for multi-device access
+      setCloudSyncIndicator('saving');
+      try {
+        const payload = {
+          shops: shopsList
+        };
+        const res = await fetch(CLOUD_DB_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          setCloudSyncIndicator('connected');
+          return true;
+        } else {
+          console.warn('Cloud sync response was not ok:', res.status);
+          setCloudSyncIndicator('error');
+        }
+      } catch (err) {
+        console.error('Cloud save failed:', err);
+        setCloudSyncIndicator('error');
+      }
+      return false;
+    }
+
+    // Fetch initial fresh data from online cloud database
+    async function loadCloudShopsData() {
+      setCloudSyncIndicator('syncing');
+      try {
+        const res = await fetch(CLOUD_DB_ENDPOINT + '?t=' + Date.now(), { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          if (json && Array.isArray(json.shops)) {
+            allShops = json.shops;
+            localStorage.setItem(SHOPS_STORAGE_KEY, JSON.stringify(allShops));
+            updateMetrics();
+            renderShopsList();
+            setCloudSyncIndicator('connected');
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Cloud fetch offline, trying local shops.json fallback:', err);
+      }
+
+      // Fallback 1: Local repository shops.json
+      try {
+        const localRes = await fetch('./shops.json?t=' + Date.now(), { cache: 'no-store' });
+        if (localRes.ok) {
+          const localJson = await localRes.json();
+          if (localJson && Array.isArray(localJson.shops) && localJson.shops.length > 0) {
+            allShops = localJson.shops;
+            localStorage.setItem(SHOPS_STORAGE_KEY, JSON.stringify(allShops));
+            updateMetrics();
+            renderShopsList();
+            setCloudSyncIndicator('connected');
+            return;
+          }
+        }
+      } catch (e) {}
+
+      allShops = getStoredShops();
+      updateMetrics();
+      renderShopsList();
+      setCloudSyncIndicator('cached');
+    }
+
+    function setCloudSyncIndicator(status) {
+      const el = document.getElementById('admin-cloud-indicator');
+      if (!el) return;
+      if (status === 'connected') {
+        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-[#00A651] animate-pulse"></span><span>Online Cloud Database Synced</span>';
+        el.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[#074626] text-xs font-bold';
+      } else if (status === 'saving') {
+        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-blue-500 animate-spin"></span><span>Saving to Cloud...</span>';
+        el.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold';
+      } else if (status === 'syncing') {
+        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span><span>Syncing Cloud...</span>';
+        el.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold';
+      } else if (status === 'error') {
+        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-rose-500"></span><span>Saved Locally (Offline)</span>';
+        el.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold';
+      } else {
+        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-400"></span><span>Local Cache Active</span>';
+        el.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold';
+      }
+    }
+
+    // Cross-tab and storage listeners
+    if (shopsBroadcastChannel) {
+      shopsBroadcastChannel.onmessage = (event) => {
+        if (event.data && event.data.type === 'SHOPS_CHANGED') {
+          allShops = getStoredShops();
+          updateMetrics();
+          renderShopsList();
+        }
+      };
+    }
+    window.addEventListener('storage', (event) => {
+      if (event.key === SHOPS_STORAGE_KEY) {
+        allShops = getStoredShops();
+        updateMetrics();
+        renderShopsList();
+      }
+    });
+
+    // AUTHENTICATION LOGIC
+    function checkAuth() {
+      const isAuth = sessionStorage.getItem('jade_admin_auth');
+      const viewLogin = document.getElementById('view-login');
+      const viewDashboard = document.getElementById('view-dashboard');
+
+      if (isAuth === 'true') {
+        viewLogin.classList.add('hidden');
+        viewDashboard.classList.remove('hidden');
+        renderDashboardData();
+      } else {
+        viewLogin.classList.remove('hidden');
+        viewDashboard.classList.add('hidden');
+      }
+    }
+
+    function handleLoginSubmit(e) {
+      e.preventDefault();
+      const usernameInput = document.getElementById('login-username').value.trim();
+      const passwordInput = document.getElementById('login-password').value;
+      const errorDiv = document.getElementById('login-error');
+      const errorText = document.getElementById('login-error-text');
+
+      // Credentials: username: Admin (case-insensitive), password: admin@1234
+      if (usernameInput.toLowerCase() === 'admin' && passwordInput === 'admin@1234') {
+        sessionStorage.setItem('jade_admin_auth', 'true');
+        sessionStorage.setItem('jade_admin_user', 'Admin');
+        errorDiv.classList.add('hidden');
+        showToast("Authenticated successfully. Welcome Admin!", "success");
+        checkAuth();
+      } else {
+        errorDiv.classList.remove('hidden');
+        errorText.innerText = "Invalid username or password. Please verify your credentials.";
+      }
+    }
+
+    function handleLogout() {
+      if (confirm("Are you sure you want to log out of the Admin CMS?")) {
+        sessionStorage.removeItem('jade_admin_auth');
+        sessionStorage.removeItem('jade_admin_user');
+        checkAuth();
+        showToast("Logged out successfully.", "info");
+      }
+    }
+
+    function togglePasswordVisibility() {
+      const input = document.getElementById('login-password');
+      if (input.type === 'password') {
+        input.type = 'text';
+      } else {
+        input.type = 'password';
+      }
+    }
+
+    // DASHBOARD RENDERING & CRUD
+    let allShops = [];
+    let currentSearchQuery = '';
+
+    function renderDashboardData() {
+      allShops = getStoredShops();
+      updateMetrics();
+      renderShopsList();
+      loadCloudShopsData();
+    }
+
+    function updateMetrics() {
+      const totalShops = allShops.length;
+      const citiesSet = new Set(allShops.map(s => (s.city || '').toLowerCase().trim()));
+      
+      document.getElementById('metric-total-shops').innerText = totalShops;
+      document.getElementById('metric-total-cities').innerText = citiesSet.size;
+      document.getElementById('badge-total-shops').innerText = `${totalShops} Stores`;
+    }
+
+    function filterAdminShops(query) {
+      currentSearchQuery = (query || '').toLowerCase().trim();
+      renderShopsList();
+    }
+
+    function renderShopsList() {
+      const container = document.getElementById('admin-shops-cards-list');
+      if (!container) return;
+
+      let filtered = allShops;
+      if (currentSearchQuery) {
+        filtered = allShops.filter(s =>
+          (s.name || '').toLowerCase().includes(currentSearchQuery) ||
+          (s.city || '').toLowerCase().includes(currentSearchQuery) ||
+          (s.address || '').toLowerCase().includes(currentSearchQuery)
+        );
+      }
+
+      if (allShops.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-16 px-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-[#00A651] flex items-center justify-center mx-auto mb-3">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            </div>
+            <p class="text-base font-bold text-slate-800">No stores in network yet</p>
+            <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Use the <strong>Add New Shop</strong> form on the left to register your first authorized dealer. It will live update on the website immediately!</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12 px-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+            <svg class="w-10 h-10 text-slate-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            <p class="text-sm font-bold text-slate-700">No shops found matching your search</p>
+            <p class="text-xs text-slate-400 mt-1">Try clear search query or add a new shop using the left panel.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map((shop) => `
+        <div class="p-4 rounded-2xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="space-y-1.5 flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="font-extrabold text-sm text-slate-900 truncate">${shop.name}</h3>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-[#074626] border border-emerald-200 shrink-0">
+                ${shop.city}
+              </span>
+              ${shop.isFlagship ? `<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200 shrink-0">Flagship</span>` : ''}
+            </div>
+
+            <p class="text-xs text-slate-600 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <span>${shop.address}</span>
+            </p>
+
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-500 pt-0.5">
+              <span class="flex items-center gap-1">
+                <svg class="w-3 h-3 text-[#00A651]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                <a href="tel:${shop.phone}" class="hover:underline font-semibold text-slate-700">${shop.phone}</a>
+              </span>
+              <span class="font-mono text-[10px] text-slate-400 bg-white px-2 py-0.5 rounded-md border border-slate-200">
+                GPS: ${Number(shop.lat).toFixed(4)}, ${Number(shop.lng).toFixed(4)}
+              </span>
+              <span>•</span>
+              <span>${shop.hours || 'Mon - Sat: 8:00 AM - 6:00 PM'}</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200">
+            <button
+              onclick="deleteShop('${shop.id}', '${shop.name.replace(/'/g, "\\'")}')"
+              class="px-3 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+              title="Delete this store from directory"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              <span>Delete</span>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Add New Shop Handler
+    function handleAddNewShop(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('form-shop-name').value.trim();
+      const city = document.getElementById('form-shop-city').value.trim();
+      const address = document.getElementById('form-shop-address').value.trim();
+      const phone = document.getElementById('form-shop-phone').value.trim();
+      const lat = parseFloat(document.getElementById('form-shop-lat').value) || 6.9271;
+      const lng = parseFloat(document.getElementById('form-shop-lng').value) || 79.8612;
+      const hours = document.getElementById('form-shop-hours').value.trim();
+
+      if (!name || !city || !address || !phone) {
+        alert("Please fill in all required shop fields.");
+        return;
+      }
+
+      const newShop = {
+        id: "shop-" + Date.now(),
+        name,
+        city,
+        address,
+        phone,
+        lat,
+        lng,
+        hours: hours || "Mon - Sat: 8:00 AM - 6:00 PM",
+        isFlagship: false
+      };
+
+      allShops.unshift(newShop);
+      saveStoredShops(allShops);
+      updateMetrics();
+      renderShopsList();
+
+      // Reset form
+      document.getElementById('form-shop-name').value = '';
+      document.getElementById('form-shop-city').value = '';
+      document.getElementById('form-shop-address').value = '';
+      document.getElementById('form-shop-phone').value = '';
+      document.getElementById('form-city-presets').value = '';
+
+      showToast(`Added "${name}" to store network!`, "success");
+    }
+
+    // Delete Shop Handler
+    function deleteShop(shopId, shopName) {
+      if (!confirm(`Are you sure you want to permanently delete "${shopName}" from the dealer locator?`)) {
+        return;
+      }
+
+      allShops = allShops.filter(s => s.id !== shopId);
+      saveStoredShops(allShops);
+      updateMetrics();
+      renderShopsList();
+
+      showToast(`Removed "${shopName}" from directory.`, "info");
+    }
+
+    // Clear all stores
+    function clearAllShops() {
+      if (allShops.length === 0) {
+        showToast("Directory is already empty.", "info");
+        return;
+      }
+      if (!confirm("Are you sure you want to remove ALL shops from the public website?")) {
+        return;
+      }
+
+      allShops = [];
+      saveStoredShops(allShops);
+      updateMetrics();
+      renderShopsList();
+
+      showToast("Cleared all shops from live directory.", "info");
+    }
+
+    // City Preset helper
+    function applyCityPreset(cityName) {
+      if (!cityName) return;
+      const key = cityName.toLowerCase().trim();
+      document.getElementById('form-shop-city').value = cityName;
+
+      if (CITY_PRESETS[key]) {
+        document.getElementById('form-shop-lat').value = CITY_PRESETS[key].lat;
+        document.getElementById('form-shop-lng').value = CITY_PRESETS[key].lng;
+      }
+    }
+
+    // Toast notification
+    function showToast(message, type = "success") {
+      const toast = document.getElementById('toast');
+      const text = document.getElementById('toast-message');
+      const icon = document.getElementById('toast-icon');
+
+      text.innerText = message;
+      if (type === 'success') {
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>';
+        icon.className = 'w-4 h-4 text-[#00A651]';
+      } else {
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>';
+        icon.className = 'w-4 h-4 text-amber-400';
+      }
+
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3500);
+    }
+
+    // Check auth on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      checkAuth();
+    });
+  </script>
+</body>
+</html>
