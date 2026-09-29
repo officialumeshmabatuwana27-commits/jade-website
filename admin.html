@@ -233,7 +233,7 @@
               Shops & Dealer Management Portal
             </h1>
             <p class="mt-2 text-xs sm:text-sm text-gray-300 max-w-2xl leading-relaxed">
-              Input new authorized retail paint centers, update coordinates for Google Maps navigation, or remove obsolete stores. All updates synchronize in real-time with the public Find a Shop directory.
+              Input new authorized retail paint centers, update coordinates for Mapbox navigation, or remove obsolete stores. All updates synchronize in real-time with the public Find a Shop directory.
             </p>
           </div>
 
@@ -363,7 +363,7 @@
                   <svg class="w-4 h-4 text-[#00A651]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                   GPS Coordinates for Map Pin
                 </span>
-                <span class="text-[10px] text-slate-500">Google Maps WGS84</span>
+                <span class="text-[10px] text-slate-500">Mapbox / GPS WGS84</span>
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
@@ -485,7 +485,7 @@
     // Baseline: Empty (all shops added by Admin)
     const FACTORY_DEFAULT_SHOPS = [];
     const SHOPS_STORAGE_KEY = 'jade_custom_shops_v2';
-    const CLOUD_DB_ENDPOINT = 'https://api.restful-api.dev/objects/ff808181a09d98f701a0eb98eaf53bcd';
+    const CLOUD_DB_ENDPOINT = 'https://api.npoint.io/249f9cb136e8d1c46893';
 
     // BroadcastChannel for instant cross-tab sync
     let shopsBroadcastChannel = null;
@@ -541,17 +541,22 @@
       setCloudSyncIndicator('saving');
       try {
         const payload = {
-          name: 'JADE_COATINGS_SHOPS_DIRECTORY_2026',
-          data: { shops: shopsList }
+          shops: shopsList
         };
         const res = await fetch(CLOUD_DB_ENDPOINT, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
           body: JSON.stringify(payload)
         });
         if (res.ok) {
           setCloudSyncIndicator('connected');
           return true;
+        } else {
+          console.warn('Cloud sync response was not ok:', res.status);
+          setCloudSyncIndicator('error');
         }
       } catch (err) {
         console.error('Cloud save failed:', err);
@@ -564,11 +569,11 @@
     async function loadCloudShopsData() {
       setCloudSyncIndicator('syncing');
       try {
-        const res = await fetch(CLOUD_DB_ENDPOINT);
+        const res = await fetch(CLOUD_DB_ENDPOINT + '?t=' + Date.now(), { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
-          if (json && json.data && Array.isArray(json.data.shops)) {
-            allShops = json.data.shops;
+          if (json && Array.isArray(json.shops)) {
+            allShops = json.shops;
             localStorage.setItem(SHOPS_STORAGE_KEY, JSON.stringify(allShops));
             updateMetrics();
             renderShopsList();
@@ -577,8 +582,25 @@
           }
         }
       } catch (err) {
-        console.warn('Cloud fetch offline, falling back to local cache:', err);
+        console.warn('Cloud fetch offline, trying local shops.json fallback:', err);
       }
+
+      // Fallback 1: Local repository shops.json
+      try {
+        const localRes = await fetch('./shops.json?t=' + Date.now(), { cache: 'no-store' });
+        if (localRes.ok) {
+          const localJson = await localRes.json();
+          if (localJson && Array.isArray(localJson.shops) && localJson.shops.length > 0) {
+            allShops = localJson.shops;
+            localStorage.setItem(SHOPS_STORAGE_KEY, JSON.stringify(allShops));
+            updateMetrics();
+            renderShopsList();
+            setCloudSyncIndicator('connected');
+            return;
+          }
+        }
+      } catch (e) {}
+
       allShops = getStoredShops();
       updateMetrics();
       renderShopsList();
@@ -597,6 +619,12 @@
       } else if (status === 'syncing') {
         el.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span><span>Syncing Cloud...</span>';
         el.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold';
+      } else if (status === 'error') {
+        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-rose-500"></span><span>Saved Locally (Offline)</span>';
+        el.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold';
+      } else {
+        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-400"></span><span>Local Cache Active</span>';
+        el.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold';
       }
     }
 

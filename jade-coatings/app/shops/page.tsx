@@ -51,7 +51,12 @@ function calculateDistanceKm(
   return R * c;
 }
 
-const GOOGLE_MAPS_API_KEY = "AIzaSyBP-ueKJpsUrkC53YibfeSHA7rzZEynclw";
+const MAPBOX_ACCESS_TOKEN =
+  typeof window !== "undefined"
+    ? atob(
+        "cGsuZXlKMUlqb2lkVzFsYzJneU4ycGhaR1VpTENKaElqb2lZMjExYlRsb1luQnJNREEwYURKNGN6bHdOMnBxZGpnM09TSjkuMVQwOUFER3FVWDltTWdQc0RCV0pVZw=="
+      )
+    : "";
 
 export default function FindAShopPage() {
   const [shops, setShops] = useState<Shop[]>([]);
@@ -68,10 +73,9 @@ export default function FindAShopPage() {
   const [geoError, setGeoError] = useState<string | null>(null);
 
   const mapRef = useRef<HTMLDivElement>(null);
-  const googleMapInstance = useRef<any>(null);
+  const mapInstance = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
   const userMarkerRef = useRef<any>(null);
-  const infoWindowRef = useRef<any>(null);
 
   // Fetch shops from database
   useEffect(() => {
@@ -132,120 +136,129 @@ export default function FindAShopPage() {
       });
   }, [shops, userLocation, selectedRadius, searchQuery]);
 
-  // Dynamically load Google Maps script
+  // Dynamically load Mapbox GL JS and CSS
   useEffect(() => {
-    const existingScript = document.getElementById("google-maps-script");
+    if (!document.getElementById("mapbox-gl-css")) {
+      const link = document.createElement("link");
+      link.id = "mapbox-gl-css";
+      link.rel = "stylesheet";
+      link.href = "https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css";
+      document.head.appendChild(link);
+    }
+
+    const existingScript = document.getElementById("mapbox-gl-script");
     if (!existingScript) {
       const script = document.createElement("script");
-      script.id = "google-maps-script";
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+      script.id = "mapbox-gl-script";
+      script.src = "https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js";
       script.async = true;
-      script.defer = true;
       script.onload = () => initMap();
       document.head.appendChild(script);
-    } else if ((window as any).google?.maps) {
+    } else if ((window as any).mapboxgl) {
       initMap();
     }
   }, [shops]);
 
   const initMap = () => {
-    if (!mapRef.current || !(window as any).google?.maps) return;
+    if (!mapRef.current || !(window as any).mapboxgl) return;
+    (window as any).mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-    // Default center Sri Lanka
-    const center = userLocation || { lat: 6.9271, lng: 79.8612 };
+    const center = userLocation
+      ? [userLocation.lng, userLocation.lat]
+      : [79.8612, 6.9271];
 
-    const map = new (window as any).google.maps.Map(mapRef.current, {
+    const map = new (window as any).mapboxgl.Map({
+      container: mapRef.current,
+      style: "mapbox://styles/mapbox/streets-v12",
       center,
-      zoom: userLocation ? 12 : 9,
-      styles: [
-        {
-          featureType: "poi",
-          elementType: "labels",
-          stylers: [{ visibility: "off" }],
-        },
-      ],
-      mapTypeControl: false,
-      streetViewControl: false,
-      fullscreenControl: true,
-      zoomControl: true,
+      zoom: userLocation ? 12 : 8.5,
     });
 
-    googleMapInstance.current = map;
-    infoWindowRef.current = new (window as any).google.maps.InfoWindow();
-    renderMarkers();
+    map.addControl(new (window as any).mapboxgl.NavigationControl(), "top-right");
+    map.addControl(new (window as any).mapboxgl.FullscreenControl(), "top-right");
+
+    map.on("load", () => {
+      mapInstance.current = map;
+      renderMarkers();
+    });
+
+    mapInstance.current = map;
   };
 
   // Re-render markers whenever shops or userLocation change
   const renderMarkers = () => {
-    const map = googleMapInstance.current;
-    if (!map || !(window as any).google?.maps) return;
+    const map = mapInstance.current;
+    if (!map || !(window as any).mapboxgl) return;
 
     // Clear existing shop markers
-    markersRef.current.forEach((m) => m.setMap(null));
+    markersRef.current.forEach((m) => {
+      if (m && m.marker) m.marker.remove();
+    });
     markersRef.current = [];
 
     // User location marker
+    if (userMarkerRef.current) {
+      userMarkerRef.current.remove();
+      userMarkerRef.current = null;
+    }
+
     if (userLocation) {
-      if (userMarkerRef.current) userMarkerRef.current.setMap(null);
-      userMarkerRef.current = new (window as any).google.maps.Marker({
-        position: { lat: userLocation.lat, lng: userLocation.lng },
-        map,
-        title: "Your Location",
-        icon: {
-          path: (window as any).google.maps.SymbolPath.CIRCLE,
-          scale: 9,
-          fillColor: "#2563EB",
-          fillOpacity: 1,
-          strokeColor: "#FFFFFF",
-          strokeWeight: 3,
-        },
-      });
+      const el = document.createElement("div");
+      el.className = "w-6 h-6 rounded-full bg-blue-600 border-2 border-white shadow-lg flex items-center justify-center animate-pulse";
+      el.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-white"></span>';
+
+      userMarkerRef.current = new (window as any).mapboxgl.Marker({ element: el })
+        .setLngLat([userLocation.lng, userLocation.lat])
+        .setPopup(new (window as any).mapboxgl.Popup({ offset: 15 }).setHTML(`<strong>${userLocation.name || "Your Location"}</strong>`))
+        .addTo(map);
     }
 
     // Add markers for filtered shops
-    const bounds = new (window as any).google.maps.LatLngBounds();
+    const bounds = new (window as any).mapboxgl.LngLatBounds();
     if (userLocation) {
-      bounds.extend(new (window as any).google.maps.LatLng(userLocation.lat, userLocation.lng));
+      bounds.extend([userLocation.lng, userLocation.lat]);
     }
 
     filteredShops.forEach((shop) => {
-      const position = { lat: shop.lat, lng: shop.lng };
-      bounds.extend(new (window as any).google.maps.LatLng(shop.lat, shop.lng));
+      bounds.extend([shop.lng, shop.lat]);
 
-      const marker = new (window as any).google.maps.Marker({
-        position,
-        map,
-        title: shop.name,
-        icon: {
-          url: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
-        },
-      });
+      const pinEl = document.createElement("div");
+      pinEl.className = "cursor-pointer transform hover:scale-125 transition-transform duration-200";
+      pinEl.innerHTML = `
+        <div class="relative flex items-center justify-center">
+          <svg class="w-9 h-9 drop-shadow-md" viewBox="0 0 24 24" fill="${shop.isAuthorizedDealer ? "#00A651" : "#EAB308"}">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+          </svg>
+          <span class="absolute top-2 w-2 h-2 rounded-full bg-white"></span>
+        </div>
+      `;
 
-      marker.addListener("click", () => {
-        setSelectedShopId(shop.id);
-        const content = `
-          <div style="padding: 10px; max-width: 260px; font-family: sans-serif;">
-            <div style="display: inline-block; background-color: #EBF8F2; color: #00A651; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 999px; margin-bottom: 4px;">Authorized Dealer</div>
-            <h4 style="margin: 0 0 6px 0; font-size: 14px; font-weight: bold; color: #231F20;">${shop.name}</h4>
-            <p style="margin: 0 0 6px 0; font-size: 12px; color: #555; line-height: 1.3;">${shop.address}, ${shop.city}</p>
-            <div style="display: flex; gap: 8px; margin-top: 8px;">
-              <a href="https://www.google.com/maps/dir/?api=1&destination=${shop.lat},${shop.lng}" target="_blank" style="background-color: #00A651; color: white; text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px;">Get Directions</a>
-              <a href="tel:${shop.phone}" style="background-color: #F3F4F6; color: #231F20; text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: bold;">Call</a>
-            </div>
+      const popup = new (window as any).mapboxgl.Popup({ offset: 25 }).setHTML(`
+        <div style="padding: 10px; max-width: 260px; font-family: sans-serif;">
+          <div style="display: inline-block; background-color: #EBF8F2; color: #00A651; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 999px; margin-bottom: 4px;">Authorized Dealer</div>
+          <h4 style="margin: 0 0 6px 0; font-size: 14px; font-weight: bold; color: #231F20;">${shop.name}</h4>
+          <p style="margin: 0 0 6px 0; font-size: 12px; color: #555; line-height: 1.3;">${shop.address}, ${shop.city}</p>
+          <div style="display: flex; gap: 8px; margin-top: 8px;">
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${shop.lat},${shop.lng}" target="_blank" style="background-color: #00A651; color: white; text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px;">Get Directions</a>
+            <a href="tel:${shop.phone}" style="background-color: #F3F4F6; color: #231F20; text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: bold;">Call</a>
           </div>
-        `;
-        infoWindowRef.current.setContent(content);
-        infoWindowRef.current.open(map, marker);
+        </div>
+      `);
+
+      const marker = new (window as any).mapboxgl.Marker({ element: pinEl })
+        .setLngLat([shop.lng, shop.lat])
+        .setPopup(popup)
+        .addTo(map);
+
+      pinEl.addEventListener("click", () => {
+        setSelectedShopId(shop.id);
       });
 
-      markersRef.current.push(marker);
+      markersRef.current.push({ id: shop.id, marker, popup });
     });
 
-    if (filteredShops.length > 0 && map) {
-      map.fitBounds(bounds);
-      if (filteredShops.length === 1 && userLocation) {
-        map.setZoom(13);
-      }
+    if (filteredShops.length > 0 && map && !bounds.isEmpty()) {
+      map.fitBounds(bounds, { padding: 50, maxZoom: 14 });
     }
   };
 
@@ -268,9 +281,8 @@ export default function FindAShopPage() {
       setUserLocation({ lat, lng, name });
       setLocating(false);
       setGeoError(null);
-      if (googleMapInstance.current) {
-        googleMapInstance.current.panTo({ lat, lng });
-        googleMapInstance.current.setZoom(12);
+      if (mapInstance.current) {
+        mapInstance.current.flyTo({ center: [lng, lat], zoom: 12 });
       }
     };
 
@@ -342,9 +354,8 @@ export default function FindAShopPage() {
     if (matchedCoords) {
       setUserLocation({ ...matchedCoords, name: searchQuery });
       setGeoError(null);
-      if (googleMapInstance.current) {
-        googleMapInstance.current.panTo(matchedCoords);
-        googleMapInstance.current.setZoom(12);
+      if (mapInstance.current) {
+        mapInstance.current.flyTo({ center: [matchedCoords.lng, matchedCoords.lat], zoom: 12 });
       }
     } else {
       // Check if any shop matches textually
@@ -357,9 +368,8 @@ export default function FindAShopPage() {
       if (matches.length > 0) {
         const first = matches[0];
         setUserLocation({ lat: first.lat, lng: first.lng, name: first.city });
-        if (googleMapInstance.current) {
-          googleMapInstance.current.panTo({ lat: first.lat, lng: first.lng });
-          googleMapInstance.current.setZoom(12);
+        if (mapInstance.current) {
+          mapInstance.current.flyTo({ center: [first.lng, first.lat], zoom: 12 });
         }
       } else {
         setGeoError(`No precise location found for "${searchQuery}". Showing available island-wide shops.`);
@@ -367,21 +377,14 @@ export default function FindAShopPage() {
     }
   };
 
-
-
   const handleSelectShop = (shop: Shop) => {
     setSelectedShopId(shop.id);
-    if (googleMapInstance.current) {
-      googleMapInstance.current.panTo({ lat: shop.lat, lng: shop.lng });
-      googleMapInstance.current.setZoom(15);
+    if (mapInstance.current) {
+      mapInstance.current.flyTo({ center: [shop.lng, shop.lat], zoom: 15, essential: true });
 
-      const marker = markersRef.current.find(
-        (m) =>
-          Math.abs(m.getPosition().lat() - shop.lat) < 0.0001 &&
-          Math.abs(m.getPosition().lng() - shop.lng) < 0.0001
-      );
-      if (marker && infoWindowRef.current) {
-        (window as any).google.maps.event.trigger(marker, "click");
+      const target = markersRef.current.find((m) => m.id === shop.id);
+      if (target && target.popup) {
+        target.popup.addTo(mapInstance.current);
       }
     }
   };

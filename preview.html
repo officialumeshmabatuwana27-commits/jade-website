@@ -18,7 +18,8 @@
     document.documentElement.classList.remove('dark');
     try { localStorage.removeItem('jade-theme'); } catch(e) {}
   </script>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBP-ueKJpsUrkC53YibfeSHA7rzZEynclw&libraries=places"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet" />
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -1014,10 +1015,10 @@
         <!-- Right: Google Map Container (7 cols) -->
         <div class="lg:col-span-7 sticky top-24">
           <div class="bg-white p-3 rounded-3xl shadow-xl border border-gray-100 relative">
-            <div id="google-shops-map" class="w-full h-[500px] sm:h-[600px] lg:h-[720px] rounded-2xl bg-gray-100 overflow-hidden relative">
+            <div id="mapbox-shops-map" class="w-full h-[500px] sm:h-[600px] lg:h-[720px] rounded-2xl bg-gray-100 overflow-hidden relative">
               <div class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-gray-50">
                 <svg class="w-10 h-10 text-[#00A651] animate-pulse mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                <span class="text-sm font-bold text-[#231F20]">Connecting to Google Maps...</span>
+                <span class="text-sm font-bold text-[#231F20]">Connecting to Mapbox...</span>
                 <span class="text-xs text-gray-400 mt-1 max-w-xs">Initializing real-time interactive dealer coordinates.</span>
               </div>
             </div>
@@ -2693,9 +2694,10 @@
     // =========================================================================
     // 8. FIND A SHOP (DEALER LOCATOR & GOOGLE MAPS INTEGRATION)
     // =========================================================================
+    const MAPBOX_ACCESS_TOKEN = atob('cGsuZXlKMUlqb2lkVzFsYzJneU4ycGhaR1VpTENKaElqb2lZMjExYlRsb1luQnJNREEwYURKNGN6bHdOMnBxZGpnM09TSjkuMVQwOUFER3FVWDltTWdQc0RCV0pVZw==');
     const DEFAULT_SHOPS_DATA = [];
     const SHOPS_STORAGE_KEY = 'jade_custom_shops_v2';
-    const CLOUD_DB_ENDPOINT = 'https://api.restful-api.dev/objects/ff808181a09d98f701a0eb98eaf53bcd';
+    const CLOUD_DB_ENDPOINT = 'https://api.npoint.io/249f9cb136e8d1c46893';
 
     // Broadcast channel for instant 0ms tab sync
     let shopsBroadcastChannel = null;
@@ -2704,6 +2706,16 @@
         shopsBroadcastChannel = new BroadcastChannel('jade_shops_sync_v2');
       }
     } catch(e) {}
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
 
     function getLocalShops() {
       try {
@@ -2732,7 +2744,6 @@
     let shopMapInstance = null;
     let shopMarkersList = [];
     let userMapMarker = null;
-    let shopInfoWindow = null;
     let currentFilteredShops = [];
     let lastKnownShopsSnapshot = '';
 
@@ -2748,28 +2759,53 @@
       return R * c;
     }
 
-    // Google Maps Initializer
-    function initShopsGoogleMap() {
-      const mapContainer = document.getElementById('google-shops-map');
-      if (!mapContainer || !window.google || !window.google.maps) return;
+    // Helper: Generate GeoJSON polygon circle for radius visualization on Mapbox
+    function createGeoJSONCircle(centerLngLat, radiusInKm, points = 64) {
+      const [lng, lat] = centerLngLat;
+      const coords = { latitude: lat, longitude: lng };
+      const ret = [];
+      const distanceX = radiusInKm / (111.320 * Math.cos(coords.latitude * Math.PI / 180));
+      const distanceY = radiusInKm / 110.574;
+      for (let i = 0; i < points; i++) {
+        const theta = (i / points) * (2 * Math.PI);
+        const x = distanceX * Math.cos(theta);
+        const y = distanceY * Math.sin(theta);
+        ret.push([coords.longitude + x, coords.latitude + y]);
+      }
+      ret.push(ret[0]);
+      return {
+        type: 'Feature',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [ret]
+        }
+      };
+    }
 
-      const defaultCenter = currentShopUserLocation || { lat: 6.9271, lng: 79.8612 };
+    // Mapbox Initializer
+    function initShopsMap() {
+      const mapContainer = document.getElementById('mapbox-shops-map') || document.getElementById('google-shops-map');
+      if (!mapContainer || !window.mapboxgl) return;
 
-      shopMapInstance = new google.maps.Map(mapContainer, {
+      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+
+      const defaultCenter = currentShopUserLocation
+        ? [currentShopUserLocation.lng, currentShopUserLocation.lat]
+        : [79.8612, 6.9271]; // [lng, lat]
+
+      shopMapInstance = new mapboxgl.Map({
+        container: mapContainer,
+        style: 'mapbox://styles/mapbox/streets-v12',
         center: defaultCenter,
-        zoom: currentShopUserLocation ? 12 : 8,
-        styles: [
-          { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-          { featureType: 'transit', elementType: 'labels', stylers: [{ visibility: 'off' }] }
-        ],
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: true,
-        zoomControl: true
+        zoom: currentShopUserLocation ? 12 : 8
       });
 
-      shopInfoWindow = new google.maps.InfoWindow();
-      updateShopMarkersOnMap();
+      shopMapInstance.addControl(new mapboxgl.NavigationControl({ showCompass: true, showZoom: true }), 'top-right');
+      shopMapInstance.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+
+      shopMapInstance.on('load', () => {
+        updateShopMarkersOnMap();
+      });
     }
 
     // RENDER SHOPS LIST & FILTER
@@ -2925,105 +2961,180 @@
     }
 
     function updateShopMarkersOnMap() {
-      if (!shopMapInstance || !window.google || !window.google.maps) return;
+      if (!shopMapInstance || !window.mapboxgl) return;
 
-      // Clear existing markers
-      shopMarkersList.forEach(m => m.setMap(null));
+      // 1. Clear existing shop markers
+      if (shopMarkersList && shopMarkersList.length > 0) {
+        shopMarkersList.forEach(item => {
+          if (item && item.marker) item.marker.remove();
+        });
+      }
       shopMarkersList = [];
 
-      // Update user location marker
+      // 2. Clear user location marker
+      if (userMapMarker) {
+        userMapMarker.remove();
+        userMapMarker = null;
+      }
+
       const legendUserDot = document.getElementById('legend-user-dot');
+
+      // 3. User location marker and radius circle
       if (currentShopUserLocation) {
         if (legendUserDot) legendUserDot.classList.remove('hidden');
-        if (userMapMarker) userMapMarker.setMap(null);
-        userMapMarker = new google.maps.Marker({
-          position: { lat: currentShopUserLocation.lat, lng: currentShopUserLocation.lng },
-          map: shopMapInstance,
-          title: "Your Location",
-          icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 9,
-            fillColor: "#2563EB",
-            fillOpacity: 1,
-            strokeColor: "#FFFFFF",
-            strokeWeight: 3
-          }
-        });
+
+        // Custom pulsing blue user marker
+        const el = document.createElement('div');
+        el.className = 'w-6 h-6 rounded-full bg-blue-600 border-2 border-white shadow-lg flex items-center justify-center animate-pulse';
+        el.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-white"></span>';
+
+        userMapMarker = new mapboxgl.Marker({ element: el })
+          .setLngLat([currentShopUserLocation.lng, currentShopUserLocation.lat])
+          .setPopup(new mapboxgl.Popup({ offset: 15 }).setHTML(`
+            <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; font-weight: 700; color: #1E40AF; padding: 2px;">
+              📍 ${escapeHtml(currentShopUserLocation.name || 'Your Location')}
+            </div>
+          `))
+          .addTo(shopMapInstance);
+
+        // Update radius circle layer
+        if (shopMapInstance.isStyleLoaded()) {
+          updateRadiusCircleOnMap();
+        } else {
+          shopMapInstance.once('load', updateRadiusCircleOnMap);
+        }
       } else {
         if (legendUserDot) legendUserDot.classList.add('hidden');
+        removeRadiusCircleFromMap();
       }
 
       if (currentFilteredShops.length === 0) {
         if (!currentShopUserLocation) {
-          shopMapInstance.setCenter({ lat: 6.9271, lng: 79.8612 });
-          shopMapInstance.setZoom(8);
+          shopMapInstance.flyTo({ center: [79.8612, 6.9271], zoom: 8 });
         }
         return;
       }
 
-      const bounds = new google.maps.LatLngBounds();
+      const bounds = new mapboxgl.LngLatBounds();
       if (currentShopUserLocation) {
-        bounds.extend(new google.maps.LatLng(currentShopUserLocation.lat, currentShopUserLocation.lng));
+        bounds.extend([currentShopUserLocation.lng, currentShopUserLocation.lat]);
       }
 
+      // 4. Render dealer pins
       currentFilteredShops.forEach(shop => {
-        const pos = { lat: shop.lat, lng: shop.lng };
-        bounds.extend(new google.maps.LatLng(shop.lat, shop.lng));
+        bounds.extend([shop.lng, shop.lat]);
 
-        const marker = new google.maps.Marker({
-          position: pos,
-          map: shopMapInstance,
-          title: shop.name,
-          icon: {
-            url: "https://maps.google.com/mapfiles/ms/icons/green-dot.png"
-          }
-        });
+        const popupHtml = `
+          <div style="font-family: 'Plus Jakarta Sans', sans-serif; padding: 4px; max-width: 250px;">
+            <div style="font-size: 10px; font-weight: 800; color: #00A651; text-transform: uppercase; margin-bottom: 2px;">
+              ${shop.isFlagship ? '★ Flagship Dealer' : 'JADE Authorized Dealer'}
+            </div>
+            <div style="font-size: 14px; font-weight: 800; color: #111827; margin-bottom: 4px;">${escapeHtml(shop.name)}</div>
+            <div style="font-size: 12px; color: #4B5563; margin-bottom: 4px;">📍 ${escapeHtml(shop.address || shop.city)}</div>
+            ${shop.phone ? `<div style="font-size: 12px; font-weight: 700; color: #111827; margin-bottom: 8px;">📞 ${escapeHtml(shop.phone)}</div>` : ''}
+            <div style="display:flex; gap:6px; margin-top:8px;">
+              <a href="https://www.google.com/maps/dir/?api=1&destination=${shop.lat},${shop.lng}" target="_blank" rel="noopener noreferrer" style="flex:1; text-align:center; background:#00A651; color:#ffffff; padding:6px 10px; border-radius:8px; font-size:11px; font-weight:700; text-decoration:none;">
+                Directions ↗
+              </a>
+              ${shop.phone ? `<a href="tel:${shop.phone}" style="text-align:center; background:#F3F4F6; color:#111827; padding:6px 10px; border-radius:8px; font-size:11px; font-weight:700; text-decoration:none;">Call</a>` : ''}
+            </div>
+          </div>
+        `;
+        const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(popupHtml);
 
-        marker.addListener('click', () => {
+        const pinColor = shop.isFlagship ? '#EAB308' : '#00A651';
+        const pinEl = document.createElement('div');
+        pinEl.className = 'cursor-pointer transform hover:scale-125 transition-transform duration-200';
+        pinEl.innerHTML = `
+          <div class="relative flex items-center justify-center">
+            <svg class="w-9 h-9 drop-shadow-md" viewBox="0 0 24 24" fill="${pinColor}">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+            <span class="absolute top-2 w-2 h-2 rounded-full bg-white"></span>
+          </div>
+        `;
+
+        const marker = new mapboxgl.Marker({ element: pinEl })
+          .setLngLat([shop.lng, shop.lat])
+          .setPopup(popup)
+          .addTo(shopMapInstance);
+
+        pinEl.addEventListener('click', () => {
           focusShopOnMap(shop);
         });
 
-        shopMarkersList.push(marker);
+        shopMarkersList.push({ id: shop.id, marker, popup });
       });
 
-      if (currentFilteredShops.length === 1 && !currentShopUserLocation) {
-        shopMapInstance.setCenter({ lat: currentFilteredShops[0].lat, lng: currentFilteredShops[0].lng });
-        shopMapInstance.setZoom(14);
-      } else if (currentFilteredShops.length > 0) {
-        shopMapInstance.fitBounds(bounds);
-        if (shopMapInstance.getZoom() > 15) {
-          shopMapInstance.setZoom(15);
+      if (!bounds.isEmpty()) {
+        if (currentFilteredShops.length === 1 && !currentShopUserLocation) {
+          shopMapInstance.flyTo({ center: [currentFilteredShops[0].lng, currentFilteredShops[0].lat], zoom: 14 });
+        } else {
+          shopMapInstance.fitBounds(bounds, { padding: 60, maxZoom: 14, duration: 1000 });
         }
       }
     }
 
+    function updateRadiusCircleOnMap() {
+      if (!shopMapInstance || !shopMapInstance.isStyleLoaded()) return;
+      if (!currentShopUserLocation || currentShopRadius === null) {
+        removeRadiusCircleFromMap();
+        return;
+      }
+
+      const circleData = createGeoJSONCircle([currentShopUserLocation.lng, currentShopUserLocation.lat], currentShopRadius);
+      const source = shopMapInstance.getSource('user-radius-source');
+      if (source) {
+        source.setData(circleData);
+      } else {
+        shopMapInstance.addSource('user-radius-source', {
+          type: 'geojson',
+          data: circleData
+        });
+        shopMapInstance.addLayer({
+          id: 'user-radius-fill',
+          type: 'fill',
+          source: 'user-radius-source',
+          paint: {
+            'fill-color': '#00A651',
+            'fill-opacity': 0.08
+          }
+        });
+        shopMapInstance.addLayer({
+          id: 'user-radius-line',
+          type: 'line',
+          source: 'user-radius-source',
+          paint: {
+            'line-color': '#00A651',
+            'line-width': 2,
+            'line-dasharray': [2, 2]
+          }
+        });
+      }
+    }
+
+    function removeRadiusCircleFromMap() {
+      if (!shopMapInstance || !shopMapInstance.isStyleLoaded()) return;
+      if (shopMapInstance.getLayer('user-radius-line')) shopMapInstance.removeLayer('user-radius-line');
+      if (shopMapInstance.getLayer('user-radius-fill')) shopMapInstance.removeLayer('user-radius-fill');
+      if (shopMapInstance.getSource('user-radius-source')) shopMapInstance.removeSource('user-radius-source');
+    }
+
     function focusShopOnMap(shop) {
       selectedShopId = shop.id;
-      if (!shopMapInstance || !window.google || !window.google.maps) return;
+      if (!shopMapInstance) return;
 
-      shopMapInstance.panTo({ lat: shop.lat, lng: shop.lng });
-      shopMapInstance.setZoom(15);
+      shopMapInstance.flyTo({
+        center: [shop.lng, shop.lat],
+        zoom: 15,
+        essential: true
+      });
 
-      if (shopInfoWindow) {
-        shopInfoWindow.setContent(`
-          <div style="font-family: 'Plus Jakarta Sans', sans-serif; padding: 6px; max-width: 250px;">
-            <div style="font-size: 11px; font-weight: 800; color: #00A651; text-transform: uppercase; margin-bottom: 2px;">JADE Authorized Dealer</div>
-            <div style="font-size: 14px; font-weight: 800; color: #231F20; margin-bottom: 4px;">${shop.name}</div>
-            <div style="font-size: 12px; color: #4B5563; margin-bottom: 6px;">${shop.address}</div>
-            <div style="font-size: 12px; font-weight: 700; color: #231F20; margin-bottom: 8px;">📞 ${shop.phone}</div>
-            <a href="https://www.google.com/maps/dir/?api=1&destination=${shop.lat},${shop.lng}" target="_blank" style="display: block; text-align: center; background: #00A651; color: #ffffff; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; text-decoration: none;">Get Directions ↗</a>
-          </div>
-        `);
-        const marker = shopMarkersList.find(m => 
-          Math.abs(m.getPosition().lat() - shop.lat) < 0.0001 &&
-          Math.abs(m.getPosition().lng() - shop.lng) < 0.0001
-        );
-        if (marker) {
-          shopInfoWindow.open(shopMapInstance, marker);
-        }
+      const target = shopMarkersList.find(m => m.id === shop.id);
+      if (target && target.popup) {
+        target.popup.addTo(shopMapInstance);
       }
       renderShops();
-      syncFromCloudDatabase();
     }
 
     // Set Radius Filter (5, 10, 20 or null for All)
@@ -3039,7 +3150,6 @@
         }
       });
       renderShops();
-      syncFromCloudDatabase();
     }
 
     // ROBUST "LOCATE ME" FUNCTION (Mobile GPS + Desktop Wi-Fi + IP Geolocation Fallback)
@@ -3065,12 +3175,10 @@
         }
 
         if (shopMapInstance) {
-          shopMapInstance.panTo({ lat, lng });
-          shopMapInstance.setZoom(13);
+          shopMapInstance.flyTo({ center: [lng, lat], zoom: 13, essential: true });
         }
 
         renderShops();
-      syncFromCloudDatabase();
       }
 
       // 1. Try Browser Geolocation
@@ -3179,8 +3287,7 @@
           statusEl.classList.remove('hidden');
         }
         if (shopMapInstance) {
-          shopMapInstance.panTo({ lat: matchedCity.lat, lng: matchedCity.lng });
-          shopMapInstance.setZoom(12);
+          shopMapInstance.flyTo({ center: [matchedCity.lng, matchedCity.lat], zoom: 12, essential: true });
         }
       } else {
         const allShops = getLocalShops();
@@ -3191,41 +3298,65 @@
         if (found) {
           currentShopUserLocation = { lat: found.lat, lng: found.lng, name: found.city };
           if (statusEl) {
-            statusEl.innerHTML = `📍 Showing results matching "<strong>${input.value.trim()}</strong>"`;
+            statusEl.innerHTML = `📍 Showing results matching "<strong>${escapeHtml(input.value.trim())}</strong>"`;
             statusEl.classList.remove('hidden');
+          }
+          if (shopMapInstance) {
+            shopMapInstance.flyTo({ center: [found.lng, found.lat], zoom: 12, essential: true });
           }
         }
       }
 
       renderShops();
-      syncFromCloudDatabase();
     }
 
-    // REAL-TIME SYNCHRONIZATION (CROSS-DEVICE CLOUD DB + SAME-ORIGIN BROADCAST)
+    // REAL-TIME SYNCHRONIZATION (CROSS-DEVICE CLOUD DB + LOCAL STORAGE)
+    let isCloudSyncing = false;
     async function syncFromCloudDatabase() {
+      if (isCloudSyncing) return;
+      isCloudSyncing = true;
       try {
-        const res = await fetch(CLOUD_DB_ENDPOINT);
+        const res = await fetch(CLOUD_DB_ENDPOINT + '?t=' + Date.now(), { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
-          if (json && json.data && Array.isArray(json.data.shops)) {
-            const cloudShops = json.data.shops;
+          if (json && Array.isArray(json.shops)) {
+            const cloudShops = json.shops;
             const currentJson = JSON.stringify(cloudShops);
             if (currentJson !== lastKnownShopsSnapshot) {
               lastKnownShopsSnapshot = currentJson;
               localStorage.setItem(SHOPS_STORAGE_KEY, currentJson);
               renderShops();
-      syncFromCloudDatabase();
             }
             const badge = document.getElementById('cloud-sync-status-badge');
             if (badge) badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-[#00A651] animate-pulse"></span><span>Live Cloud Connected</span>';
+            isCloudSyncing = false;
+            return;
           }
         }
       } catch (e) {
-        console.warn('Cloud sync background note:', e);
+        console.warn('Cloud sync error, attempting local fallback:', e);
       }
+
+      // Fallback: check local shops.json
+      try {
+        const localRes = await fetch('./shops.json?t=' + Date.now(), { cache: 'no-store' });
+        if (localRes.ok) {
+          const localJson = await localRes.json();
+          if (localJson && Array.isArray(localJson.shops) && localJson.shops.length > 0) {
+            const currentJson = JSON.stringify(localJson.shops);
+            if (currentJson !== lastKnownShopsSnapshot) {
+              lastKnownShopsSnapshot = currentJson;
+              localStorage.setItem(SHOPS_STORAGE_KEY, currentJson);
+              renderShops();
+            }
+          }
+        }
+      } catch (err) {}
+
+      isCloudSyncing = false;
     }
 
-    // 1. Same-device instant sync
+    // 1. Same-device instant tab sync
     if (shopsBroadcastChannel) {
       shopsBroadcastChannel.onmessage = (event) => {
         if (event.data && event.data.type === 'SHOPS_CHANGED') {
@@ -3236,16 +3367,15 @@
     window.addEventListener('storage', (event) => {
       if (event.key === SHOPS_STORAGE_KEY) {
         renderShops();
-      syncFromCloudDatabase();
       }
     });
 
-    // 2. Cross-device cloud poll every 3.5 seconds
+    // 2. Cross-device cloud poll every 4 seconds
     setInterval(() => {
       syncFromCloudDatabase();
-    }, 3500);
+    }, 4000);
 
-        window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', () => {
       if (window.location.hash === '#admin') {
         window.location.href = 'admin.html';
         return;
@@ -3254,6 +3384,7 @@
       renderProjectsAndClients();
       runCalculator();
       renderShops();
+      initShopsMap();
       syncFromCloudDatabase();
     });
   </script>
