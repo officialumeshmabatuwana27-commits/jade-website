@@ -175,8 +175,17 @@ add_action('init', function() {
         exit;
     }
 
+    // Ensure any stale static sitemap file is removed so requests are dynamically routed
+    $sitemap_files = ['sitemap.xml', 'sitemap-main.xml', 'sitemap_index.xml'];
+    foreach ($sitemap_files as $f) {
+        $p = ABSPATH . $f;
+        if (file_exists($p)) {
+            @unlink($p);
+        }
+    }
+
     // Direct endpoint interception for /sitemap_index.xml or /sitemap-index.xml
-    if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/sitemap(_index|-index)?\.xml(\?.*)?$#i', $_SERVER['REQUEST_URI'])) {
+    if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/sitemap(_index|-index)\.xml(\?.*)?$#i', $_SERVER['REQUEST_URI'])) {
         status_header(200);
         http_response_code(200);
         header('HTTP/1.1 200 OK');

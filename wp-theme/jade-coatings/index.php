@@ -13,7 +13,7 @@ if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'google30c
 }
 
 // Handle XML Sitemap Index immediately
-if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/sitemap(_index|-index)?\.xml(\?.*)?$#i', $_SERVER['REQUEST_URI'])) {
+if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/sitemap(_index|-index)\.xml(\?.*)?$#i', $_SERVER['REQUEST_URI'])) {
     if (function_exists('status_header')) {
         status_header(200);
     }
