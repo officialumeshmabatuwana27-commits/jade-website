@@ -19,17 +19,28 @@ add_filter('pre_get_document_title', function() {
     return 'JADE Coatings | Advanced Water-based Solutions';
 });
 
-// Allow /dealers-admin or /admin-portal page routing
+// Register rewrite rules for all main site section endpoints
 add_action('init', function() {
+    $routes = ['about', 'products', 'projects', 'shops', 'stores', 'calculator', 'contact'];
+    foreach ($routes as $route) {
+        add_rewrite_rule('^' . $route . '/?$', 'index.php?jade_section=' . $route, 'top');
+    }
+    add_rewrite_rule('^products/([a-z0-9_-]+)/?$', 'index.php?jade_section=products&jade_sub=$matches[1]', 'top');
     add_rewrite_rule('^dealers-admin/?$', 'index.php?jade_dealers_admin=1', 'top');
+    add_rewrite_rule('^sitemap\.xml$', 'index.php?jade_sitemap=1', 'top');
+    add_rewrite_rule('^(google30ccde190114b3a3\.html)$', 'index.php?google_verify=1', 'top');
 });
 
 add_filter('query_vars', function($vars) {
     $vars[] = 'jade_dealers_admin';
+    $vars[] = 'jade_section';
+    $vars[] = 'jade_sub';
+    $vars[] = 'jade_sitemap';
+    $vars[] = 'google_verify';
     return $vars;
 });
 
-// Ensure Google verification file exists in web root and intercept with 200 OK
+// Ensure Google verification & Sitemap endpoints intercept with 200 OK immediately
 add_action('init', function() {
     $verify_filename = 'google30ccde190114b3a3.html';
     $verify_content = "google-site-verification: google30ccde190114b3a3.html\n";
@@ -47,6 +58,39 @@ add_action('init', function() {
         echo $verify_content;
         exit;
     }
+
+    // Auto-sync static sitemap.xml & robots.txt to web root
+    $sitemap_path = ABSPATH . 'sitemap.xml';
+    $xml_content = jade_get_sitemap_xml();
+    @file_put_contents($sitemap_path, $xml_content);
+
+    $robots_path = ABSPATH . 'robots.txt';
+    if (file_exists($robots_path)) {
+        $curr_robots = @file_get_contents($robots_path);
+        if ($curr_robots && strpos($curr_robots, 'sitemap.xml') === false) {
+            @file_put_contents($robots_path, rtrim($curr_robots) . "\n\nSitemap: https://jadecoatings.lk/sitemap.xml\n");
+        }
+    }
+
+    // Direct endpoint interception for /sitemap.xml
+    if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/sitemap\.xml(\?.*)?$#i', $_SERVER['REQUEST_URI'])) {
+        status_header(200);
+        http_response_code(200);
+        header('HTTP/1.1 200 OK');
+        header('Status: 200 OK');
+        header('Content-Type: application/xml; charset=utf-8');
+        header('X-Robots-Tag: noindex, follow', true);
+        echo $xml_content;
+        exit;
+    }
+
+    // Ensure section URLs return HTTP 200 OK immediately
+    $request_path = trim(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH), '/');
+    $valid_sections = ['about', 'products', 'projects', 'shops', 'stores', 'calculator', 'contact'];
+    if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^products/(woodshield|masoguard|tyreshield)$#i', $request_path)) {
+        status_header(200);
+        http_response_code(200);
+    }
 }, 1);
 
 /**
@@ -56,7 +100,7 @@ function jade_get_sitemap_xml() {
     $home_url = trailingslashit(home_url());
     $current_date = date('Y-m-d');
     
-    // Core pages and product imagery for rich Google indexing
+    // Complete URL mapping for all main pages, brand divisions, and imagery
     $urls = [
         [
             'loc' => $home_url,
@@ -65,7 +109,15 @@ function jade_get_sitemap_xml() {
             'priority' => '1.0',
             'images' => [
                 ['loc' => 'https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.png', 'title' => 'JADE Coatings Official Logo'],
-                ['loc' => 'https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/deck-restored.jpg', 'title' => 'JADE Woodshield Restored Teak Timber Deck'],
+                ['loc' => 'https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/deck-restored.jpg', 'title' => 'JADE Woodshield Restored Teak Timber Deck']
+            ]
+        ],
+        [
+            'loc' => $home_url . 'products/',
+            'lastmod' => $current_date,
+            'changefreq' => 'weekly',
+            'priority' => '0.95',
+            'images' => [
                 ['loc' => 'https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/JADE%20woodshield%20wood%20putty%20after.png', 'title' => 'JADE WOODSHIELD Wood Putty'],
                 ['loc' => 'https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/JADE%20Woodshield%20stain%20after.png', 'title' => 'JADE WOODSHIELD Wood Stains'],
                 ['loc' => 'https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/JADE%20woodshield%20top%20coat%20After.png', 'title' => 'JADE WOODSHIELD Top Coat'],
@@ -74,6 +126,69 @@ function jade_get_sitemap_xml() {
                 ['loc' => 'https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/JADE%20Easy%20Floor%20After.png', 'title' => 'JADE Easy Floor Coating'],
                 ['loc' => 'https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Wet%20Look%20Paving%20Sealer%20After.png', 'title' => 'JADE Wet Look Paving Sealer']
             ]
+        ],
+        [
+            'loc' => $home_url . 'shops/',
+            'lastmod' => $current_date,
+            'changefreq' => 'daily',
+            'priority' => '0.90',
+            'images' => []
+        ],
+        [
+            'loc' => $home_url . 'calculator/',
+            'lastmod' => $current_date,
+            'changefreq' => 'monthly',
+            'priority' => '0.85',
+            'images' => []
+        ],
+        [
+            'loc' => $home_url . 'projects/',
+            'lastmod' => $current_date,
+            'changefreq' => 'monthly',
+            'priority' => '0.80',
+            'images' => []
+        ],
+        [
+            'loc' => $home_url . 'about/',
+            'lastmod' => $current_date,
+            'changefreq' => 'monthly',
+            'priority' => '0.80',
+            'images' => []
+        ],
+        [
+            'loc' => $home_url . 'contact/',
+            'lastmod' => $current_date,
+            'changefreq' => 'monthly',
+            'priority' => '0.80',
+            'images' => []
+        ],
+        [
+            'loc' => $home_url . 'products/woodshield/',
+            'lastmod' => $current_date,
+            'changefreq' => 'weekly',
+            'priority' => '0.85',
+            'images' => []
+        ],
+        [
+            'loc' => $home_url . 'products/masoguard/',
+            'lastmod' => $current_date,
+            'changefreq' => 'weekly',
+            'priority' => '0.85',
+            'images' => []
+        ],
+        [
+            'loc' => $home_url . 'products/tyreshield/',
+            'lastmod' => $current_date,
+            'changefreq' => 'weekly',
+            'priority' => '0.85',
+            'images' => []
+        ],
+        [
+            'loc' => $home_url . 'dealers-admin/',
+            'lastmod' => $current_date,
+            'changefreq' => 'monthly',
+            'priority' => '0.60',
+            'images' => []
         ]
     ];
 
@@ -104,43 +219,6 @@ function jade_get_sitemap_xml() {
     return $xml;
 }
 
-// Serve XML Sitemap at /sitemap.xml
-add_action('init', function() {
-    add_rewrite_rule('^sitemap\.xml$', 'index.php?jade_sitemap=1', 'top');
-
-    // Auto-sync static sitemap.xml & robots.txt to web root if writable
-    $sitemap_path = ABSPATH . 'sitemap.xml';
-    $xml_content = jade_get_sitemap_xml();
-    if (!file_exists($sitemap_path)) {
-        @file_put_contents($sitemap_path, $xml_content);
-    }
-
-    $robots_path = ABSPATH . 'robots.txt';
-    if (file_exists($robots_path)) {
-        $curr_robots = @file_get_contents($robots_path);
-        if ($curr_robots && strpos($curr_robots, 'sitemap.xml') === false) {
-            @file_put_contents($robots_path, rtrim($curr_robots) . "\n\nSitemap: https://jadecoatings.lk/sitemap.xml\n");
-        }
-    }
-
-    // Direct endpoint interception for /sitemap.xml
-    if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/sitemap\.xml(\?.*)?$#i', $_SERVER['REQUEST_URI'])) {
-        status_header(200);
-        http_response_code(200);
-        header('HTTP/1.1 200 OK');
-        header('Status: 200 OK');
-        header('Content-Type: application/xml; charset=utf-8');
-        header('X-Robots-Tag: noindex, follow', true);
-        echo $xml_content;
-        exit;
-    }
-}, 1);
-
-add_filter('query_vars', function($vars) {
-    $vars[] = 'jade_sitemap';
-    return $vars;
-});
-
 add_action('template_redirect', function() {
     if (get_query_var('jade_sitemap')) {
         status_header(200);
@@ -160,6 +238,9 @@ add_action('template_include', function($template) {
         if (file_exists($admin_file)) {
             return $admin_file;
         }
+    }
+    if (get_query_var('jade_section')) {
+        return get_template_directory() . '/index.php';
     }
     return $template;
 });

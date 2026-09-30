@@ -1,4 +1,5 @@
 <?php
+// Handle Google Search Console verification immediately
 if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'google30ccde190114b3a3.html') !== false) {
     if (function_exists('status_header')) {
         status_header(200);
@@ -10,6 +11,8 @@ if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'google30c
     echo "google-site-verification: google30ccde190114b3a3.html\n";
     exit;
 }
+
+// Handle XML Sitemap immediately
 if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/sitemap\.xml(\?.*)?$#i', $_SERVER['REQUEST_URI'])) {
     if (function_exists('status_header')) {
         status_header(200);
@@ -25,6 +28,16 @@ if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/sitemap\.xml(\?.*)?$#i', $_
         readfile(__DIR__ . '/sitemap.xml');
     }
     exit;
+}
+
+// Ensure clean section URLs return HTTP 200 OK
+$request_path = trim(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH), '/');
+$valid_sections = ['about', 'products', 'projects', 'shops', 'stores', 'calculator', 'contact'];
+if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^products/(woodshield|masoguard|tyreshield)$#i', $request_path)) {
+    if (function_exists('status_header')) {
+        status_header(200);
+    }
+    http_response_code(200);
 }
 ?>
 <!-- Live Interactive Preview for JADE Coatings -->
@@ -1988,11 +2001,13 @@ if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/sitemap\.xml(\?.*)?$#i', $_
     let calcCoats = 2;
 
     // 2. NAVIGATION
-    function navigateTo(pageId) {
+    function navigateTo(pageId, updateHistory = true) {
       if (pageId === 'admin') {
-        window.location.href = 'admin.html';
+        window.location.href = 'dealers-admin/';
         return;
       }
+      if (pageId === 'stores') pageId = 'shops';
+
       document.querySelectorAll('.page-tab').forEach(tab => tab.classList.remove('active'));
       const activeTab = document.getElementById('page-' + pageId);
       if (activeTab) {
@@ -2009,6 +2024,16 @@ if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/sitemap\.xml(\?.*)?$#i', $_
           btn.classList.add('text-[#231F20]', 'font-medium');
         }
       });
+
+      // Synchronize browser URL bar for clean SEO URLs
+      if (updateHistory && window.history && window.history.pushState && !window.location.protocol.startsWith('file')) {
+        try {
+          const targetUrl = (pageId === 'home') ? '/' : `/${pageId}/`;
+          if (window.location.pathname !== targetUrl) {
+            window.history.pushState({ page: pageId }, '', targetUrl);
+          }
+        } catch(e) {}
+      }
 
       if (pageId === 'shops') {
         setTimeout(() => {
@@ -3532,16 +3557,38 @@ if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/sitemap\.xml(\?.*)?$#i', $_
     }, 4000);
 
     window.addEventListener('DOMContentLoaded', () => {
-      if (window.location.hash === '#admin') {
-        window.location.href = 'admin.html';
-        return;
-      }
       renderProducts();
       renderProjectsAndClients();
       runCalculator();
       renderShops();
       initShopsMap();
       syncFromCloudDatabase();
+
+      // Check initial URL route
+      const cleanPath = window.location.pathname.replace(/^\/|\/$/g, '').toLowerCase().split('/')[0];
+      const validPages = ['about', 'products', 'projects', 'shops', 'stores', 'calculator', 'contact'];
+      if (validPages.includes(cleanPath)) {
+        navigateTo(cleanPath === 'stores' ? 'shops' : cleanPath, false);
+      } else if (window.location.hash) {
+        if (window.location.hash === '#admin') {
+          window.location.href = 'dealers-admin/';
+          return;
+        }
+        const hashPage = window.location.hash.replace('#', '').toLowerCase();
+        if (validPages.includes(hashPage)) {
+          navigateTo(hashPage === 'stores' ? 'shops' : hashPage, false);
+        }
+      }
+    });
+
+    window.addEventListener('popstate', (e) => {
+      const cleanPath = window.location.pathname.replace(/^\/|\/$/g, '').toLowerCase().split('/')[0];
+      const validPages = ['about', 'products', 'projects', 'shops', 'stores', 'calculator', 'contact'];
+      if (validPages.includes(cleanPath)) {
+        navigateTo(cleanPath === 'stores' ? 'shops' : cleanPath, false);
+      } else {
+        navigateTo('home', false);
+      }
     });
   </script>
   <!-- Floating WhatsApp Quick Action Button -->
