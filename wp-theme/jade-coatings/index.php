@@ -10,6 +10,22 @@ if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'google30c
     echo "google-site-verification: google30ccde190114b3a3.html\n";
     exit;
 }
+if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/sitemap\.xml(\?.*)?$#i', $_SERVER['REQUEST_URI'])) {
+    if (function_exists('status_header')) {
+        status_header(200);
+    }
+    http_response_code(200);
+    header('HTTP/1.1 200 OK');
+    header('Status: 200 OK');
+    header('Content-Type: application/xml; charset=utf-8');
+    header('X-Robots-Tag: noindex, follow', true);
+    if (function_exists('jade_get_sitemap_xml')) {
+        echo jade_get_sitemap_xml();
+    } elseif (file_exists(__DIR__ . '/sitemap.xml')) {
+        readfile(__DIR__ . '/sitemap.xml');
+    }
+    exit;
+}
 ?>
 <!-- Live Interactive Preview for JADE Coatings -->
 <!-- Updated with:
