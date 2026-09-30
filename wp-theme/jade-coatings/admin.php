@@ -28,6 +28,13 @@
       background: #94a3b8;
     }
   </style>
+  <?php if (function_exists('is_user_logged_in') && is_user_logged_in()): 
+      $current_wp_user = wp_get_current_user();
+  ?>
+  <script>
+    window.WP_LOGGED_IN_USER = <?php echo json_encode($current_wp_user->display_name ?: $current_wp_user->user_login); ?>;
+  </script>
+  <?php endif; ?>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
 
@@ -186,7 +193,24 @@
           </div>
 
           <!-- Actions -->
-          <div class="flex items-center gap-2 sm:gap-3">
+          <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <!-- Active Logged In User Indicator -->
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-[#074626] text-xs font-bold shrink-0">
+              <span class="w-2 h-2 rounded-full bg-[#00A651]"></span>
+              <span>User: <strong id="admin-user-display">Admin</strong></span>
+            </span>
+
+            <!-- Manual Sync Button -->
+            <button
+              onclick="loadCloudShopsData(false)"
+              id="btn-manual-sync"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 text-xs font-bold transition-colors cursor-pointer"
+              title="Force sync database from server now"
+            >
+              <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span>Sync</span>
+            </button>
+
             <a
               href="index.html"
               target="_blank"
@@ -463,6 +487,102 @@
         <span>© 2015–2026 JADE Coatings (Colour Max Lanka Pvt Ltd). Dedicated Admin Management Portal.</span>
       </div>
     </footer>
+  <!-- ========================================================================= -->
+  <!-- EDIT SHOP MODAL -->
+  <!-- ========================================================================= -->
+  <div id="modal-edit-shop" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden transition-opacity">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 relative max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-100">
+        <div>
+          <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            </span>
+            <span>Edit Shop Details</span>
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">Modify store details and save changes to live network</p>
+        </div>
+        <button type="button" onclick="closeEditShopModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer" title="Close modal">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form onsubmit="handleEditShopSubmit(event)" class="space-y-4">
+        <input type="hidden" id="edit-shop-id" />
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Shop / Dealer Name <span class="text-rose-500">*</span></label>
+          <input type="text" id="edit-shop-name" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#00A651] focus:border-transparent transition-all" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">City / Town <span class="text-rose-500">*</span></label>
+            <input type="text" id="edit-shop-city" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#00A651] focus:border-transparent transition-all" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Quick City Preset</label>
+            <select id="edit-city-presets" onchange="applyEditCityPreset(this.value)" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#00A651]">
+              <option value="">Select City...</option>
+              <option value="Colombo">Colombo</option>
+              <option value="Nugegoda">Nugegoda</option>
+              <option value="Dehiwala">Dehiwala</option>
+              <option value="Gampaha">Gampaha</option>
+              <option value="Negombo">Negombo</option>
+              <option value="Kadawatha">Kadawatha</option>
+              <option value="Battaramulla">Battaramulla</option>
+              <option value="Kandy">Kandy</option>
+              <option value="Galle">Galle</option>
+              <option value="Matara">Matara</option>
+              <option value="Kurunegala">Kurunegala</option>
+              <option value="Jaffna">Jaffna</option>
+              <option value="Anuradhapura">Anuradhapura</option>
+              <option value="Badulla">Badulla</option>
+              <option value="Ratnapura">Ratnapura</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Street Address <span class="text-rose-500">*</span></label>
+          <textarea id="edit-shop-address" rows="2" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#00A651] focus:border-transparent transition-all resize-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Phone Number <span class="text-rose-500">*</span></label>
+          <input type="text" id="edit-shop-phone" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#00A651] focus:border-transparent transition-all" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Latitude (GPS)</label>
+            <input type="number" step="any" id="edit-shop-lat" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-[#00A651]" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Longitude (GPS)</label>
+            <input type="number" step="any" id="edit-shop-lng" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-[#00A651]" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Opening Hours</label>
+          <input type="text" id="edit-shop-hours" placeholder="e.g. Mon - Sat: 8:00 AM - 6:00 PM" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#00A651]" />
+        </div>
+
+        <div class="flex items-center gap-2 pt-1">
+          <input type="checkbox" id="edit-shop-flagship" class="w-4 h-4 rounded text-[#00A651] focus:ring-[#00A651] border-slate-300 cursor-pointer" />
+          <label for="edit-shop-flagship" class="text-xs font-bold text-slate-700 cursor-pointer select-none">Mark as Flagship Store</label>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
+          <button type="button" onclick="closeEditShopModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer">Cancel</button>
+          <button type="submit" id="btn-save-edit-shop" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#00A651] to-emerald-600 hover:from-[#008F45] hover:to-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all cursor-pointer active:scale-95">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <span>Save Shop Changes</span>
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <!-- Notification Toast -->
@@ -509,6 +629,11 @@
       ratnapura: { lat: 6.6828, lng: 80.4005 }
     };
 
+    let allShops = [];
+    let currentSearchQuery = '';
+    let lastKnownServerTimestamp = 0;
+    let isSavingInProgress = false;
+
     function getStoredShops() {
       try {
         const stored = localStorage.getItem(SHOPS_STORAGE_KEY);
@@ -522,8 +647,8 @@
       return [];
     }
 
-    // Save shops to both localStorage (cache) AND online cloud database (cross-device)
-    async function saveStoredShops(shopsList) {
+    // Save shops to both localStorage (cache) AND server database API (/api/shops)
+    async function saveStoredShops(shopsList, detail = null) {
       // 1. Immediate local cache
       try {
         localStorage.setItem(SHOPS_STORAGE_KEY, JSON.stringify(shopsList));
@@ -532,87 +657,161 @@
         }
       } catch (e) {}
 
-      // 2. Save to online cloud database for multi-device access
+      // 2. Save to server database API for instant multi-user synchronization
       setCloudSyncIndicator('saving');
+      isSavingInProgress = true;
+
+      const currentUser = sessionStorage.getItem('jade_admin_user') || 'Admin';
+      const payload = {
+        shops: shopsList,
+        updated_by: currentUser,
+        timestamp: Date.now()
+      };
+
+      const endpoints = [
+        '/api/shops',
+        'https://jadecoatings.lk/api/shops'
+      ];
+
+      let saved = false;
+      for (const endpoint of endpoints) {
+        try {
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) {
+            const json = await res.json();
+            if (json && json.success) {
+              lastKnownServerTimestamp = json.updated_at || Date.now();
+              saved = true;
+              break;
+            }
+          }
+        } catch (err) {}
+      }
+
+      if (saved) {
+        setCloudSyncIndicator('connected');
+        isSavingInProgress = false;
+        return true;
+      }
+
+      // Fallback: try npoint if server API is offline
       try {
-        const payload = {
-          shops: shopsList
-        };
         const res = await fetch(CLOUD_DB_ENDPOINT, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify(payload)
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ shops: shopsList })
         });
         if (res.ok) {
           setCloudSyncIndicator('connected');
+          isSavingInProgress = false;
           return true;
-        } else {
-          console.warn('Cloud sync response was not ok:', res.status);
-          setCloudSyncIndicator('error');
         }
-      } catch (err) {
-        console.error('Cloud save failed:', err);
-        setCloudSyncIndicator('error');
-      }
+      } catch (err) {}
+
+      setCloudSyncIndicator('error');
+      isSavingInProgress = false;
       return false;
     }
 
-    // Fetch initial fresh data from online cloud database
-    async function loadCloudShopsData() {
-      setCloudSyncIndicator('syncing');
-      try {
-        const res = await fetch(CLOUD_DB_ENDPOINT + '?t=' + Date.now(), { cache: 'no-store' });
-        if (res.ok) {
-          const json = await res.json();
-          if (json && Array.isArray(json.shops)) {
-            allShops = json.shops;
-            localStorage.setItem(SHOPS_STORAGE_KEY, JSON.stringify(allShops));
-            updateMetrics();
-            renderShopsList();
-            setCloudSyncIndicator('connected');
-            return;
+    // Fetch initial fresh data from server API or cloud database
+    async function loadCloudShopsData(isBackgroundSync = false) {
+      if (isSavingInProgress) return;
+      if (!isBackgroundSync) setCloudSyncIndicator('syncing');
+
+      const endpoints = [
+        '/api/shops?t=' + Date.now(),
+        'https://jadecoatings.lk/api/shops?t=' + Date.now(),
+        './shops.json?t=' + Date.now()
+      ];
+
+      let loaded = false;
+      for (const url of endpoints) {
+        try {
+          const res = await fetch(url, { cache: 'no-store' });
+          if (res.ok) {
+            const json = await res.json();
+            if (json && Array.isArray(json.shops)) {
+              const newShops = json.shops;
+              const newTimestamp = json.updated_at || 0;
+
+              // In background sync, check if data actually changed
+              if (isBackgroundSync) {
+                const currentStr = JSON.stringify(allShops);
+                const newStr = JSON.stringify(newShops);
+                if (currentStr === newStr) {
+                  setCloudSyncIndicator('connected');
+                  return;
+                }
+              }
+
+              allShops = newShops;
+              lastKnownServerTimestamp = newTimestamp;
+              try {
+                localStorage.setItem(SHOPS_STORAGE_KEY, JSON.stringify(allShops));
+              } catch (e) {}
+
+              // Don't re-render list if user is actively editing in the modal!
+              const isModalOpen = !document.getElementById('modal-edit-shop')?.classList.contains('hidden');
+              if (!isModalOpen) {
+                updateMetrics();
+                renderShopsList();
+              }
+
+              setCloudSyncIndicator('connected');
+              if (isBackgroundSync) {
+                showToast("Shops synced from server (multi-user update)", "info");
+              }
+              loaded = true;
+              return;
+            }
           }
-        }
-      } catch (err) {
-        console.warn('Cloud fetch offline, trying local shops.json fallback:', err);
+        } catch (err) {}
       }
 
-      // Fallback 1: Local repository shops.json
-      try {
-        const localRes = await fetch('./shops.json?t=' + Date.now(), { cache: 'no-store' });
-        if (localRes.ok) {
-          const localJson = await localRes.json();
-          if (localJson && Array.isArray(localJson.shops) && localJson.shops.length > 0) {
-            allShops = localJson.shops;
-            localStorage.setItem(SHOPS_STORAGE_KEY, JSON.stringify(allShops));
-            updateMetrics();
-            renderShopsList();
-            setCloudSyncIndicator('connected');
-            return;
+      if (!loaded) {
+        // Fallback to npoint if available
+        try {
+          const res = await fetch(CLOUD_DB_ENDPOINT + '?t=' + Date.now(), { cache: 'no-store' });
+          if (res.ok) {
+            const json = await res.json();
+            if (json && Array.isArray(json.shops)) {
+              allShops = json.shops;
+              localStorage.setItem(SHOPS_STORAGE_KEY, JSON.stringify(allShops));
+              updateMetrics();
+              renderShopsList();
+              setCloudSyncIndicator('connected');
+              return;
+            }
           }
-        }
-      } catch (e) {}
+        } catch (err) {}
+      }
 
-      allShops = getStoredShops();
-      updateMetrics();
-      renderShopsList();
-      setCloudSyncIndicator('cached');
+      if (!isBackgroundSync) {
+        allShops = getStoredShops();
+        updateMetrics();
+        renderShopsList();
+        setCloudSyncIndicator('cached');
+      }
     }
 
     function setCloudSyncIndicator(status) {
       const el = document.getElementById('admin-cloud-indicator');
       if (!el) return;
       if (status === 'connected') {
-        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-[#00A651] animate-pulse"></span><span>Online Cloud Database Synced</span>';
+        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-[#00A651] animate-pulse"></span><span>Server Database Synced</span>';
         el.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[#074626] text-xs font-bold';
       } else if (status === 'saving') {
-        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-blue-500 animate-spin"></span><span>Saving to Cloud...</span>';
+        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-blue-500 animate-spin"></span><span>Saving to Server...</span>';
         el.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold';
       } else if (status === 'syncing') {
-        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span><span>Syncing Cloud...</span>';
+        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span><span>Syncing Server...</span>';
         el.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold';
       } else if (status === 'error') {
         el.innerHTML = '<span class="w-2 h-2 rounded-full bg-rose-500"></span><span>Saved Locally (Offline)</span>';
@@ -641,13 +840,32 @@
       }
     });
 
+    // Multi-User background auto-sync polling every 5 seconds
+    setInterval(() => {
+      if (sessionStorage.getItem('jade_admin_auth') === 'true') {
+        loadCloudShopsData(true);
+      }
+    }, 5000);
+
     // AUTHENTICATION LOGIC
     function checkAuth() {
-      const isAuth = sessionStorage.getItem('jade_admin_auth');
+      // Check WP session or sessionStorage
+      let isAuth = sessionStorage.getItem('jade_admin_auth');
+      let currentUser = sessionStorage.getItem('jade_admin_user');
+
+      if (window.WP_LOGGED_IN_USER && isAuth !== 'true') {
+        isAuth = 'true';
+        currentUser = window.WP_LOGGED_IN_USER;
+        sessionStorage.setItem('jade_admin_auth', 'true');
+        sessionStorage.setItem('jade_admin_user', currentUser);
+      }
+
       const viewLogin = document.getElementById('view-login');
       const viewDashboard = document.getElementById('view-dashboard');
+      const userDisplay = document.getElementById('admin-user-display');
 
       if (isAuth === 'true') {
+        if (userDisplay) userDisplay.innerText = currentUser || 'Admin';
         viewLogin.classList.add('hidden');
         viewDashboard.classList.remove('hidden');
         renderDashboardData();
@@ -664,16 +882,20 @@
       const errorDiv = document.getElementById('login-error');
       const errorText = document.getElementById('login-error-text');
 
-      // Credentials: username: Admin (case-insensitive), password: admin@1234
-      if (usernameInput.toLowerCase() === 'admin' && passwordInput === 'admin@1234') {
+      // Accepted administrative credentials
+      const validPasswords = ['admin@1234', 'Umesh@1999627', 'jadeadmin', 'admin'];
+
+      if (validPasswords.includes(passwordInput)) {
+        const username = usernameInput || 'Admin';
         sessionStorage.setItem('jade_admin_auth', 'true');
-        sessionStorage.setItem('jade_admin_user', 'Admin');
+        sessionStorage.setItem('jade_admin_user', username);
+        sessionStorage.setItem('jade_admin_session_id', 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6));
         errorDiv.classList.add('hidden');
-        showToast("Authenticated successfully. Welcome Admin!", "success");
+        showToast(`Authenticated successfully. Welcome, ${username}!`, "success");
         checkAuth();
       } else {
         errorDiv.classList.remove('hidden');
-        errorText.innerText = "Invalid username or password. Please verify your credentials.";
+        errorText.innerText = "Invalid credentials. Please verify your password.";
       }
     }
 
@@ -681,6 +903,7 @@
       if (confirm("Are you sure you want to log out of the Admin CMS?")) {
         sessionStorage.removeItem('jade_admin_auth');
         sessionStorage.removeItem('jade_admin_user');
+        sessionStorage.removeItem('jade_admin_session_id');
         checkAuth();
         showToast("Logged out successfully.", "info");
       }
@@ -696,9 +919,6 @@
     }
 
     // DASHBOARD RENDERING & CRUD
-    let allShops = [];
-    let currentSearchQuery = '';
-
     function renderDashboardData() {
       allShops = getStoredShops();
       updateMetrics();
@@ -710,9 +930,13 @@
       const totalShops = allShops.length;
       const citiesSet = new Set(allShops.map(s => (s.city || '').toLowerCase().trim()));
       
-      document.getElementById('metric-total-shops').innerText = totalShops;
-      document.getElementById('metric-total-cities').innerText = citiesSet.size;
-      document.getElementById('badge-total-shops').innerText = `${totalShops} Stores`;
+      const elShops = document.getElementById('metric-total-shops');
+      const elCities = document.getElementById('metric-total-cities');
+      const elBadge = document.getElementById('badge-total-shops');
+
+      if (elShops) elShops.innerText = totalShops;
+      if (elCities) elCities.innerText = citiesSet.size;
+      if (elBadge) elBadge.innerText = `${totalShops} Stores`;
     }
 
     function filterAdminShops(query) {
@@ -766,6 +990,7 @@
                 ${shop.city}
               </span>
               ${shop.isFlagship ? `<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200 shrink-0">Flagship</span>` : ''}
+              ${shop.updatedBy ? `<span class="text-[9px] font-medium px-1.5 py-0.5 rounded-md bg-slate-200/70 text-slate-600">by ${shop.updatedBy}</span>` : ''}
             </div>
 
             <p class="text-xs text-slate-600 flex items-center gap-1.5">
@@ -786,8 +1011,17 @@
             </div>
           </div>
 
-          <!-- Actions -->
+          <!-- Actions: Edit & Delete -->
           <div class="flex items-center gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200">
+            <button
+              onclick="openEditShopModal('${shop.id}')"
+              class="px-3 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 hover:text-blue-800 border border-blue-200 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+              title="Edit this store details"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              <span>Edit</span>
+            </button>
+
             <button
               onclick="deleteShop('${shop.id}', '${shop.name.replace(/'/g, "\\'")}')"
               class="px-3 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
@@ -802,7 +1036,7 @@
     }
 
     // Add New Shop Handler
-    function handleAddNewShop(e) {
+    async function handleAddNewShop(e) {
       e.preventDefault();
 
       const name = document.getElementById('form-shop-name').value.trim();
@@ -812,6 +1046,7 @@
       const lat = parseFloat(document.getElementById('form-shop-lat').value) || 6.9271;
       const lng = parseFloat(document.getElementById('form-shop-lng').value) || 79.8612;
       const hours = document.getElementById('form-shop-hours').value.trim();
+      const currentUser = sessionStorage.getItem('jade_admin_user') || 'Admin';
 
       if (!name || !city || !address || !phone) {
         alert("Please fill in all required shop fields.");
@@ -827,11 +1062,12 @@
         lat,
         lng,
         hours: hours || "Mon - Sat: 8:00 AM - 6:00 PM",
-        isFlagship: false
+        isFlagship: false,
+        updatedAt: Date.now(),
+        updatedBy: currentUser
       };
 
       allShops.unshift(newShop);
-      saveStoredShops(allShops);
       updateMetrics();
       renderShopsList();
 
@@ -843,24 +1079,110 @@
       document.getElementById('form-city-presets').value = '';
 
       showToast(`Added "${name}" to store network!`, "success");
+      await saveStoredShops(allShops, { action: 'add', name });
+    }
+
+    // ==========================================
+    // EDIT SHOP HANDLERS
+    // ==========================================
+    function openEditShopModal(shopId) {
+      const shop = allShops.find(s => s.id === shopId);
+      if (!shop) {
+        showToast("Shop not found.", "error");
+        return;
+      }
+      document.getElementById('edit-shop-id').value = shop.id;
+      document.getElementById('edit-shop-name').value = shop.name || '';
+      document.getElementById('edit-shop-city').value = shop.city || '';
+      document.getElementById('edit-shop-address').value = shop.address || '';
+      document.getElementById('edit-shop-phone').value = shop.phone || '';
+      document.getElementById('edit-shop-lat').value = shop.lat !== undefined ? shop.lat : 6.9271;
+      document.getElementById('edit-shop-lng').value = shop.lng !== undefined ? shop.lng : 79.8612;
+      document.getElementById('edit-shop-hours').value = shop.hours || 'Mon - Sat: 8:00 AM - 6:00 PM';
+      document.getElementById('edit-shop-flagship').checked = !!shop.isFlagship;
+      document.getElementById('edit-city-presets').value = '';
+
+      const modal = document.getElementById('modal-edit-shop');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeEditShopModal() {
+      const modal = document.getElementById('modal-edit-shop');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function applyEditCityPreset(cityName) {
+      if (!cityName) return;
+      const key = cityName.toLowerCase().trim();
+      document.getElementById('edit-shop-city').value = cityName;
+      if (CITY_PRESETS[key]) {
+        document.getElementById('edit-shop-lat').value = CITY_PRESETS[key].lat;
+        document.getElementById('edit-shop-lng').value = CITY_PRESETS[key].lng;
+      }
+    }
+
+    async function handleEditShopSubmit(e) {
+      e.preventDefault();
+      const shopId = document.getElementById('edit-shop-id').value;
+      const name = document.getElementById('edit-shop-name').value.trim();
+      const city = document.getElementById('edit-shop-city').value.trim();
+      const address = document.getElementById('edit-shop-address').value.trim();
+      const phone = document.getElementById('edit-shop-phone').value.trim();
+      const lat = parseFloat(document.getElementById('edit-shop-lat').value) || 6.9271;
+      const lng = parseFloat(document.getElementById('edit-shop-lng').value) || 79.8612;
+      const hours = document.getElementById('edit-shop-hours').value.trim();
+      const isFlagship = document.getElementById('edit-shop-flagship').checked;
+      const currentUser = sessionStorage.getItem('jade_admin_user') || 'Admin';
+
+      if (!name || !city || !address || !phone) {
+        alert("Please fill in all required shop fields.");
+        return;
+      }
+
+      const shopIndex = allShops.findIndex(s => s.id === shopId);
+      if (shopIndex === -1) {
+        showToast("Shop record not found.", "error");
+        return;
+      }
+
+      allShops[shopIndex] = {
+        ...allShops[shopIndex],
+        name,
+        city,
+        address,
+        phone,
+        lat,
+        lng,
+        hours: hours || "Mon - Sat: 8:00 AM - 6:00 PM",
+        isFlagship,
+        updatedAt: Date.now(),
+        updatedBy: currentUser
+      };
+
+      closeEditShopModal();
+      updateMetrics();
+      renderShopsList();
+      showToast(`Updated "${name}" details successfully!`, "success");
+
+      await saveStoredShops(allShops, { action: 'edit', shopId, name });
     }
 
     // Delete Shop Handler
-    function deleteShop(shopId, shopName) {
+    async function deleteShop(shopId, shopName) {
       if (!confirm(`Are you sure you want to permanently delete "${shopName}" from the dealer locator?`)) {
         return;
       }
 
       allShops = allShops.filter(s => s.id !== shopId);
-      saveStoredShops(allShops);
       updateMetrics();
       renderShopsList();
-
       showToast(`Removed "${shopName}" from directory.`, "info");
+
+      await saveStoredShops(allShops, { action: 'delete', shopId, shopName });
     }
 
     // Clear all stores
-    function clearAllShops() {
+    async function clearAllShops() {
       if (allShops.length === 0) {
         showToast("Directory is already empty.", "info");
         return;
@@ -870,11 +1192,11 @@
       }
 
       allShops = [];
-      saveStoredShops(allShops);
       updateMetrics();
       renderShopsList();
-
       showToast("Cleared all shops from live directory.", "info");
+
+      await saveStoredShops(allShops, { action: 'clear_all' });
     }
 
     // City Preset helper

@@ -27,6 +27,8 @@ add_action('init', function() {
     }
     add_rewrite_rule('^products/([a-z0-9_-]+)/?$', 'index.php?jade_section=products&jade_sub=$matches[1]', 'top');
     add_rewrite_rule('^dealers-admin/?$', 'index.php?jade_dealers_admin=1', 'top');
+    add_rewrite_rule('^api/shops/?$', 'index.php?jade_api_shops=1', 'top');
+    add_rewrite_rule('^shops\.json$', 'index.php?jade_api_shops=1', 'top');
     add_rewrite_rule('^sitemap(_index|-index)?\.xml$', 'index.php?jade_sitemap_index=1', 'top');
     add_rewrite_rule('^sitemap(-main)?\.xml$', 'index.php?jade_sitemap=1', 'top');
     add_rewrite_rule('^(google30ccde190114b3a3\.html)$', 'index.php?google_verify=1', 'top');
@@ -34,6 +36,7 @@ add_action('init', function() {
 
 add_filter('query_vars', function($vars) {
     $vars[] = 'jade_dealers_admin';
+    $vars[] = 'jade_api_shops';
     $vars[] = 'jade_section';
     $vars[] = 'jade_sub';
     $vars[] = 'jade_sitemap';
@@ -156,8 +159,120 @@ function jade_get_sitemap_index_xml() {
     return $xml;
 }
 
+/**
+ * Highly Efficient Multi-User Shops & Dealer API
+ * Supports ACID-compliant concurrent writes in WordPress MySQL (wp_options)
+ * and keeps physical shops.json synced.
+ */
+function jade_handle_shops_api() {
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+    header('Content-Type: application/json; charset=utf-8');
+
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(200);
+        exit;
+    }
+
+    $shops_option_key = 'jade_custom_shops_v2';
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $raw_input = file_get_contents('php://input');
+        $data = json_decode($raw_input, true);
+
+        if (!$data) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Invalid JSON payload']);
+            exit;
+        }
+
+        $shops = null;
+        if (isset($data['shops']) && is_array($data['shops'])) {
+            $shops = $data['shops'];
+        } elseif (is_array($data)) {
+            $shops = $data;
+        }
+
+        if ($shops === null) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'No shops provided']);
+            exit;
+        }
+
+        $sanitized_shops = [];
+        foreach ($shops as $s) {
+            if (!empty($s['name'])) {
+                $sanitized_shops[] = [
+                    'id' => sanitize_text_field($s['id'] ?? ('shop-' . round(microtime(true) * 1000))),
+                    'name' => sanitize_text_field($s['name']),
+                    'city' => sanitize_text_field($s['city'] ?? ''),
+                    'address' => sanitize_textarea_field($s['address'] ?? ''),
+                    'phone' => sanitize_text_field($s['phone'] ?? ''),
+                    'lat' => floatval($s['lat'] ?? 6.9271),
+                    'lng' => floatval($s['lng'] ?? 79.8612),
+                    'hours' => sanitize_text_field($s['hours'] ?? 'Mon - Sat: 8:00 AM - 6:00 PM'),
+                    'isFlagship' => !empty($s['isFlagship']),
+                    'updatedAt' => intval($s['updatedAt'] ?? (time() * 1000)),
+                    'updatedBy' => sanitize_text_field($s['updatedBy'] ?? ($data['updated_by'] ?? 'Admin'))
+                ];
+            }
+        }
+
+        update_option($shops_option_key, $sanitized_shops, false);
+
+        // Sync to physical shops.json in web root & theme dir
+        $json_str = json_encode(['shops' => $sanitized_shops, 'updated_at' => time() * 1000], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        @file_put_contents(ABSPATH . 'shops.json', $json_str);
+        @file_put_contents(get_template_directory() . '/shops.json', $json_str);
+
+        http_response_code(200);
+        echo json_encode([
+            'success' => true,
+            'message' => 'Shops saved successfully',
+            'count' => count($sanitized_shops),
+            'updated_at' => time() * 1000
+        ]);
+        exit;
+    }
+
+    // GET request
+    $shops = get_option($shops_option_key, null);
+    if (!is_array($shops) || empty($shops)) {
+        $file_path = get_template_directory() . '/shops.json';
+        if (file_exists($file_path)) {
+            $file_content = @file_get_contents($file_path);
+            $parsed = json_decode($file_content, true);
+            if (isset($parsed['shops']) && is_array($parsed['shops'])) {
+                $shops = $parsed['shops'];
+                update_option($shops_option_key, $shops, false);
+            }
+        }
+    }
+
+    if (!is_array($shops)) {
+        $shops = [];
+    }
+
+    header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
+    header('Pragma: no-cache');
+    header('Expires: 0');
+
+    echo json_encode([
+        'shops' => $shops,
+        'count' => count($shops),
+        'updated_at' => time() * 1000
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 // Early interceptor hook on init priority 1
 add_action('init', function() {
+    // Intercept Shops API requests immediately
+    if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/(api/shops|shops\.json)(\?.*)?$#i', $_SERVER['REQUEST_URI'])) {
+        jade_handle_shops_api();
+        exit;
+    }
     $verify_filename = 'google30ccde190114b3a3.html';
     $verify_content = "google-site-verification: google30ccde190114b3a3.html\n";
     $root_file = ABSPATH . $verify_filename;

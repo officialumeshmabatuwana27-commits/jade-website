@@ -1,4 +1,12 @@
 <?php
+// Handle Shops API immediately
+if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/(api/shops|shops\.json)(\?.*)?$#i', $_SERVER['REQUEST_URI'])) {
+    if (function_exists('jade_handle_shops_api')) {
+        jade_handle_shops_api();
+        exit;
+    }
+}
+
 // Handle Google Search Console verification immediately
 if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'google30ccde190114b3a3.html') !== false) {
     if (function_exists('status_header')) {
@@ -995,7 +1003,7 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
               <span class="w-8 h-8 rounded-xl bg-emerald-100 text-[#00A651] flex items-center justify-center">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
               </span>
-              <span>Find a Shop & Dealer Directory</span>
+              <span>Find a Shop</span>
             </h1>
           </div>
         </div>
@@ -3369,8 +3377,7 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
         currentShopUserLocation = { lat, lng, name: label };
 
         if (statusEl) {
-          statusEl.innerHTML = `📍 <strong>Active Reference:</strong> ${label} (${lat.toFixed(4)}, ${lng.toFixed(4)}) • Sorted by shortest distance first.`;
-          statusEl.classList.remove('hidden');
+          statusEl.classList.add('hidden');
         }
 
         if (shopMapInstance) {
@@ -3514,41 +3521,50 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
     async function syncFromCloudDatabase() {
       if (isCloudSyncing) return;
       isCloudSyncing = true;
-      try {
-        const res = await fetch(CLOUD_DB_ENDPOINT + '?t=' + Date.now(), { cache: 'no-store' });
-        if (res.ok) {
-          const json = await res.json();
-          if (json && Array.isArray(json.shops)) {
-            const cloudShops = json.shops;
-            const currentJson = JSON.stringify(cloudShops);
-            if (currentJson !== lastKnownShopsSnapshot) {
-              lastKnownShopsSnapshot = currentJson;
-              localStorage.setItem(SHOPS_STORAGE_KEY, currentJson);
-              renderShops();
+
+      const endpoints = [
+        '/api/shops?t=' + Date.now(),
+        'https://jadecoatings.lk/api/shops?t=' + Date.now(),
+        './shops.json?t=' + Date.now()
+      ];
+
+      let loaded = false;
+      for (const url of endpoints) {
+        try {
+          const res = await fetch(url, { cache: 'no-store' });
+          if (res.ok) {
+            const json = await res.json();
+            if (json && Array.isArray(json.shops)) {
+              const currentJson = JSON.stringify(json.shops);
+              if (currentJson !== lastKnownShopsSnapshot) {
+                lastKnownShopsSnapshot = currentJson;
+                localStorage.setItem(SHOPS_STORAGE_KEY, currentJson);
+                renderShops();
+              }
+              loaded = true;
+              break;
             }
-            isCloudSyncing = false;
-            return;
           }
-        }
-      } catch (e) {
-        console.warn('Cloud sync error, attempting local fallback:', e);
+        } catch (err) {}
       }
 
-      // Fallback: check local shops.json
-      try {
-        const localRes = await fetch('./shops.json?t=' + Date.now(), { cache: 'no-store' });
-        if (localRes.ok) {
-          const localJson = await localRes.json();
-          if (localJson && Array.isArray(localJson.shops) && localJson.shops.length > 0) {
-            const currentJson = JSON.stringify(localJson.shops);
-            if (currentJson !== lastKnownShopsSnapshot) {
-              lastKnownShopsSnapshot = currentJson;
-              localStorage.setItem(SHOPS_STORAGE_KEY, currentJson);
-              renderShops();
+      if (!loaded) {
+        // Fallback to npoint if available
+        try {
+          const res = await fetch(CLOUD_DB_ENDPOINT + '?t=' + Date.now(), { cache: 'no-store' });
+          if (res.ok) {
+            const json = await res.json();
+            if (json && Array.isArray(json.shops)) {
+              const currentJson = JSON.stringify(json.shops);
+              if (currentJson !== lastKnownShopsSnapshot) {
+                lastKnownShopsSnapshot = currentJson;
+                localStorage.setItem(SHOPS_STORAGE_KEY, currentJson);
+                renderShops();
+              }
             }
           }
-        }
-      } catch (err) {}
+        } catch (err) {}
+      }
 
       isCloudSyncing = false;
     }
