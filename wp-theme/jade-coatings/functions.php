@@ -19,7 +19,7 @@ add_filter('pre_get_document_title', function() {
     return 'JADE Coatings | Advanced Water-based Solutions';
 });
 
-// Register rewrite rules for all main site section endpoints
+// Register rewrite rules for all main site section endpoints & sitemaps
 add_action('init', function() {
     $routes = ['about', 'products', 'projects', 'shops', 'stores', 'calculator', 'contact'];
     foreach ($routes as $route) {
@@ -27,7 +27,8 @@ add_action('init', function() {
     }
     add_rewrite_rule('^products/([a-z0-9_-]+)/?$', 'index.php?jade_section=products&jade_sub=$matches[1]', 'top');
     add_rewrite_rule('^dealers-admin/?$', 'index.php?jade_dealers_admin=1', 'top');
-    add_rewrite_rule('^sitemap\.xml$', 'index.php?jade_sitemap=1', 'top');
+    add_rewrite_rule('^sitemap(_index|-index)?\.xml$', 'index.php?jade_sitemap_index=1', 'top');
+    add_rewrite_rule('^sitemap(-main)?\.xml$', 'index.php?jade_sitemap=1', 'top');
     add_rewrite_rule('^(google30ccde190114b3a3\.html)$', 'index.php?google_verify=1', 'top');
 });
 
@@ -36,11 +37,126 @@ add_filter('query_vars', function($vars) {
     $vars[] = 'jade_section';
     $vars[] = 'jade_sub';
     $vars[] = 'jade_sitemap';
+    $vars[] = 'jade_sitemap_index';
     $vars[] = 'google_verify';
     return $vars;
 });
 
-// Ensure Google verification & Sitemap endpoints intercept with 200 OK immediately
+/**
+ * Dynamic XML Sitemap Generator for JADE Coatings
+ * Dynamically resolves domain (www vs non-www) to match Google Search Console property exactly.
+ */
+function jade_get_sitemap_xml() {
+    $host = $_SERVER['HTTP_HOST'] ?? 'jadecoatings.lk';
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+    $base_url = $protocol . $host . '/';
+    $current_date = date('Y-m-d');
+
+    $urls = [
+        [
+            'loc' => $base_url,
+            'lastmod' => $current_date,
+            'changefreq' => 'weekly',
+            'priority' => '1.0'
+        ],
+        [
+            'loc' => $base_url . 'products/',
+            'lastmod' => $current_date,
+            'changefreq' => 'weekly',
+            'priority' => '0.95'
+        ],
+        [
+            'loc' => $base_url . 'shops/',
+            'lastmod' => $current_date,
+            'changefreq' => 'daily',
+            'priority' => '0.90'
+        ],
+        [
+            'loc' => $base_url . 'calculator/',
+            'lastmod' => $current_date,
+            'changefreq' => 'monthly',
+            'priority' => '0.85'
+        ],
+        [
+            'loc' => $base_url . 'projects/',
+            'lastmod' => $current_date,
+            'changefreq' => 'monthly',
+            'priority' => '0.80'
+        ],
+        [
+            'loc' => $base_url . 'about/',
+            'lastmod' => $current_date,
+            'changefreq' => 'monthly',
+            'priority' => '0.80'
+        ],
+        [
+            'loc' => $base_url . 'contact/',
+            'lastmod' => $current_date,
+            'changefreq' => 'monthly',
+            'priority' => '0.80'
+        ],
+        [
+            'loc' => $base_url . 'products/woodshield/',
+            'lastmod' => $current_date,
+            'changefreq' => 'weekly',
+            'priority' => '0.85'
+        ],
+        [
+            'loc' => $base_url . 'products/masoguard/',
+            'lastmod' => $current_date,
+            'changefreq' => 'weekly',
+            'priority' => '0.85'
+        ],
+        [
+            'loc' => $base_url . 'products/tyreshield/',
+            'lastmod' => $current_date,
+            'changefreq' => 'weekly',
+            'priority' => '0.85'
+        ],
+        [
+            'loc' => $base_url . 'dealers-admin/',
+            'lastmod' => $current_date,
+            'changefreq' => 'monthly',
+            'priority' => '0.60'
+        ]
+    ];
+
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+
+    foreach ($urls as $u) {
+        $xml .= "  <url>\n";
+        $xml .= "    <loc>" . htmlspecialchars($u['loc'], ENT_XML1, 'UTF-8') . "</loc>\n";
+        $xml .= "    <lastmod>" . $u['lastmod'] . "</lastmod>\n";
+        $xml .= "    <changefreq>" . $u['changefreq'] . "</changefreq>\n";
+        $xml .= "    <priority>" . $u['priority'] . "</priority>\n";
+        $xml .= "  </url>\n";
+    }
+
+    $xml .= "</urlset>\n";
+    return $xml;
+}
+
+/**
+ * Sitemap Index Generator
+ */
+function jade_get_sitemap_index_xml() {
+    $host = $_SERVER['HTTP_HOST'] ?? 'jadecoatings.lk';
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+    $base_url = $protocol . $host . '/';
+    $current_date = date('Y-m-d');
+
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $xml .= '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    $xml .= "  <sitemap>\n";
+    $xml .= "    <loc>" . $base_url . "sitemap-main.xml</loc>\n";
+    $xml .= "    <lastmod>" . $current_date . "</lastmod>\n";
+    $xml .= "  </sitemap>\n";
+    $xml .= "</sitemapindex>\n";
+    return $xml;
+}
+
+// Early interceptor hook on init priority 1
 add_action('init', function() {
     $verify_filename = 'google30ccde190114b3a3.html';
     $verify_content = "google-site-verification: google30ccde190114b3a3.html\n";
@@ -59,28 +175,27 @@ add_action('init', function() {
         exit;
     }
 
-    // Auto-sync static sitemap.xml & robots.txt to web root
-    $sitemap_path = ABSPATH . 'sitemap.xml';
-    $xml_content = jade_get_sitemap_xml();
-    @file_put_contents($sitemap_path, $xml_content);
-
-    $robots_path = ABSPATH . 'robots.txt';
-    if (file_exists($robots_path)) {
-        $curr_robots = @file_get_contents($robots_path);
-        if ($curr_robots && strpos($curr_robots, 'sitemap.xml') === false) {
-            @file_put_contents($robots_path, rtrim($curr_robots) . "\n\nSitemap: https://jadecoatings.lk/sitemap.xml\n");
-        }
-    }
-
-    // Direct endpoint interception for /sitemap.xml
-    if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/sitemap\.xml(\?.*)?$#i', $_SERVER['REQUEST_URI'])) {
+    // Direct endpoint interception for /sitemap_index.xml or /sitemap-index.xml
+    if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/sitemap(_index|-index)?\.xml(\?.*)?$#i', $_SERVER['REQUEST_URI'])) {
         status_header(200);
         http_response_code(200);
         header('HTTP/1.1 200 OK');
         header('Status: 200 OK');
         header('Content-Type: application/xml; charset=utf-8');
         header('X-Robots-Tag: noindex, follow', true);
-        echo $xml_content;
+        echo jade_get_sitemap_index_xml();
+        exit;
+    }
+
+    // Direct endpoint interception for /sitemap.xml or /sitemap-main.xml
+    if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/sitemap(-main)?\.xml(\?.*)?$#i', $_SERVER['REQUEST_URI'])) {
+        status_header(200);
+        http_response_code(200);
+        header('HTTP/1.1 200 OK');
+        header('Status: 200 OK');
+        header('Content-Type: application/xml; charset=utf-8');
+        header('X-Robots-Tag: noindex, follow', true);
+        echo jade_get_sitemap_xml();
         exit;
     }
 
@@ -92,145 +207,6 @@ add_action('init', function() {
         http_response_code(200);
     }
 }, 1);
-
-/**
- * XML Sitemap Generator for JADE Coatings
- */
-function jade_get_sitemap_xml() {
-    $home_url = trailingslashit(home_url());
-    $current_date = date('Y-m-d');
-    
-    // Complete URL mapping for all main pages, brand divisions, and imagery
-    $urls = [
-        [
-            'loc' => $home_url,
-            'lastmod' => $current_date,
-            'changefreq' => 'weekly',
-            'priority' => '1.0',
-            'images' => [
-                ['loc' => 'https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.png', 'title' => 'JADE Coatings Official Logo'],
-                ['loc' => 'https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/deck-restored.jpg', 'title' => 'JADE Woodshield Restored Teak Timber Deck']
-            ]
-        ],
-        [
-            'loc' => $home_url . 'products/',
-            'lastmod' => $current_date,
-            'changefreq' => 'weekly',
-            'priority' => '0.95',
-            'images' => [
-                ['loc' => 'https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/JADE%20woodshield%20wood%20putty%20after.png', 'title' => 'JADE WOODSHIELD Wood Putty'],
-                ['loc' => 'https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/JADE%20Woodshield%20stain%20after.png', 'title' => 'JADE WOODSHIELD Wood Stains'],
-                ['loc' => 'https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/JADE%20woodshield%20top%20coat%20After.png', 'title' => 'JADE WOODSHIELD Top Coat'],
-                ['loc' => 'https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Masoguard%20All%20in%20one%20After.png', 'title' => 'JADE MASOGUARD All in One Water Proof Paint'],
-                ['loc' => 'https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/JADE%20Roof%20%26%20WAll%20Shield%20After.png', 'title' => 'JADE Roof and Wall Shield'],
-                ['loc' => 'https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/JADE%20Easy%20Floor%20After.png', 'title' => 'JADE Easy Floor Coating'],
-                ['loc' => 'https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Wet%20Look%20Paving%20Sealer%20After.png', 'title' => 'JADE Wet Look Paving Sealer']
-            ]
-        ],
-        [
-            'loc' => $home_url . 'shops/',
-            'lastmod' => $current_date,
-            'changefreq' => 'daily',
-            'priority' => '0.90',
-            'images' => []
-        ],
-        [
-            'loc' => $home_url . 'calculator/',
-            'lastmod' => $current_date,
-            'changefreq' => 'monthly',
-            'priority' => '0.85',
-            'images' => []
-        ],
-        [
-            'loc' => $home_url . 'projects/',
-            'lastmod' => $current_date,
-            'changefreq' => 'monthly',
-            'priority' => '0.80',
-            'images' => []
-        ],
-        [
-            'loc' => $home_url . 'about/',
-            'lastmod' => $current_date,
-            'changefreq' => 'monthly',
-            'priority' => '0.80',
-            'images' => []
-        ],
-        [
-            'loc' => $home_url . 'contact/',
-            'lastmod' => $current_date,
-            'changefreq' => 'monthly',
-            'priority' => '0.80',
-            'images' => []
-        ],
-        [
-            'loc' => $home_url . 'products/woodshield/',
-            'lastmod' => $current_date,
-            'changefreq' => 'weekly',
-            'priority' => '0.85',
-            'images' => []
-        ],
-        [
-            'loc' => $home_url . 'products/masoguard/',
-            'lastmod' => $current_date,
-            'changefreq' => 'weekly',
-            'priority' => '0.85',
-            'images' => []
-        ],
-        [
-            'loc' => $home_url . 'products/tyreshield/',
-            'lastmod' => $current_date,
-            'changefreq' => 'weekly',
-            'priority' => '0.85',
-            'images' => []
-        ],
-        [
-            'loc' => $home_url . 'dealers-admin/',
-            'lastmod' => $current_date,
-            'changefreq' => 'monthly',
-            'priority' => '0.60',
-            'images' => []
-        ]
-    ];
-
-    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"' . "\n";
-    $xml .= '        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">' . "\n";
-
-    foreach ($urls as $u) {
-        $xml .= "  <url>\n";
-        $xml .= "    <loc>" . htmlspecialchars($u['loc'], ENT_XML1, 'UTF-8') . "</loc>\n";
-        $xml .= "    <lastmod>" . $u['lastmod'] . "</lastmod>\n";
-        $xml .= "    <changefreq>" . $u['changefreq'] . "</changefreq>\n";
-        $xml .= "    <priority>" . $u['priority'] . "</priority>\n";
-        if (!empty($u['images'])) {
-            foreach ($u['images'] as $img) {
-                $xml .= "    <image:image>\n";
-                $xml .= "      <image:loc>" . htmlspecialchars($img['loc'], ENT_XML1, 'UTF-8') . "</image:loc>\n";
-                if (!empty($img['title'])) {
-                    $xml .= "      <image:title>" . htmlspecialchars($img['title'], ENT_XML1, 'UTF-8') . "</image:title>\n";
-                }
-                $xml .= "    </image:image>\n";
-            }
-        }
-        $xml .= "  </url>\n";
-    }
-
-    $xml .= "</urlset>\n";
-    return $xml;
-}
-
-add_action('template_redirect', function() {
-    if (get_query_var('jade_sitemap')) {
-        status_header(200);
-        http_response_code(200);
-        header('HTTP/1.1 200 OK');
-        header('Status: 200 OK');
-        header('Content-Type: application/xml; charset=utf-8');
-        header('X-Robots-Tag: noindex, follow', true);
-        echo jade_get_sitemap_xml();
-        exit;
-    }
-});
 
 add_action('template_include', function($template) {
     if (get_query_var('jade_dealers_admin')) {

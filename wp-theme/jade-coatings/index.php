@@ -12,8 +12,24 @@ if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'google30c
     exit;
 }
 
+// Handle XML Sitemap Index immediately
+if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/sitemap(_index|-index)?\.xml(\?.*)?$#i', $_SERVER['REQUEST_URI'])) {
+    if (function_exists('status_header')) {
+        status_header(200);
+    }
+    http_response_code(200);
+    header('HTTP/1.1 200 OK');
+    header('Status: 200 OK');
+    header('Content-Type: application/xml; charset=utf-8');
+    header('X-Robots-Tag: noindex, follow', true);
+    if (function_exists('jade_get_sitemap_index_xml')) {
+        echo jade_get_sitemap_index_xml();
+    }
+    exit;
+}
+
 // Handle XML Sitemap immediately
-if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/sitemap\.xml(\?.*)?$#i', $_SERVER['REQUEST_URI'])) {
+if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/sitemap(-main)?\.xml(\?.*)?$#i', $_SERVER['REQUEST_URI'])) {
     if (function_exists('status_header')) {
         status_header(200);
     }

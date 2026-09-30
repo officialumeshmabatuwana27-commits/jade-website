@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <!-- 1. Homepage -->
+  <url>
+    <loc>https://jadecoatings.lk/</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.png</image:loc>
+      <image:title>JADE Coatings Official Logo</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/deck-restored.jpg</image:loc>
+      <image:title>JADE Woodshield Restored Teak Timber Deck</image:title>
+    </image:image>
+  </url>
+
+  <!-- 2. Products Catalog -->
+  <url>
+    <loc>https://jadecoatings.lk/products/</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/JADE%20woodshield%20wood%20putty%20after.png</image:loc>
+      <image:title>JADE WOODSHIELD Wood Putty</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/JADE%20Woodshield%20stain%20after.png</image:loc>
+      <image:title>JADE WOODSHIELD Wood Stains</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/JADE%20woodshield%20top%20coat%20After.png</image:loc>
+      <image:title>JADE WOODSHIELD Top Coat</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Masoguard%20All%20in%20one%20After.png</image:loc>
+      <image:title>JADE MASOGUARD All in One Water Proof Paint</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/JADE%20Roof%20%26%20WAll%20Shield%20After.png</image:loc>
+      <image:title>JADE Roof and Wall Shield</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/JADE%20Easy%20Floor%20After.png</image:loc>
+      <image:title>JADE Easy Floor Coating</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Wet%20Look%20Paving%20Sealer%20After.png</image:loc>
+      <image:title>JADE Wet Look Paving Sealer</image:title>
+    </image:image>
+  </url>
+
+  <!-- 3. Find a Shop / Dealer Locator -->
+  <url>
+    <loc>https://jadecoatings.lk/shops/</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- 4. Paint Coverage Calculator -->
+  <url>
+    <loc>https://jadecoatings.lk/calculator/</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- 5. Prestigious Projects & Corporate Clients -->
+  <url>
+    <loc>https://jadecoatings.lk/projects/</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- 6. About Us -->
+  <url>
+    <loc>https://jadecoatings.lk/about/</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- 7. Contact Us -->
+  <url>
+    <loc>https://jadecoatings.lk/contact/</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- 8. WOODSHIELD Timber Care Division -->
+  <url>
+    <loc>https://jadecoatings.lk/products/woodshield/</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- 9. MASOGUARD Masonry & Waterproofing Division -->
+  <url>
+    <loc>https://jadecoatings.lk/products/masoguard/</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- 10. TYRESHIELD Industrial Rubber Solutions -->
+  <url>
+    <loc>https://jadecoatings.lk/products/tyreshield/</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- 11. Authorized Dealer Portal -->
+  <url>
+    <loc>https://jadecoatings.lk/dealers-admin/</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+</urlset>
