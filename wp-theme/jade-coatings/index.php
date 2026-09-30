@@ -1,3 +1,16 @@
+<?php
+if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'google30ccde190114b3a3.html') !== false) {
+    if (function_exists('status_header')) {
+        status_header(200);
+    }
+    http_response_code(200);
+    header('HTTP/1.1 200 OK');
+    header('Status: 200 OK');
+    header('Content-Type: text/html; charset=utf-8');
+    echo "google-site-verification: google30ccde190114b3a3.html\n";
+    exit;
+}
+?>
 <!-- Live Interactive Preview for JADE Coatings -->
 <!-- Updated with:
   1. Logo sized up TWICE as large (h-28 to h-44 in header, h-24 to h-32 in footer)

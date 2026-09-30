@@ -29,6 +29,26 @@ add_filter('query_vars', function($vars) {
     return $vars;
 });
 
+// Ensure Google verification file exists in web root and intercept with 200 OK
+add_action('init', function() {
+    $verify_filename = 'google30ccde190114b3a3.html';
+    $verify_content = "google-site-verification: google30ccde190114b3a3.html\n";
+    $root_file = ABSPATH . $verify_filename;
+    if (!file_exists($root_file)) {
+        @file_put_contents($root_file, $verify_content);
+    }
+    
+    if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], $verify_filename) !== false) {
+        status_header(200);
+        http_response_code(200);
+        header('HTTP/1.1 200 OK');
+        header('Status: 200 OK');
+        header('Content-Type: text/html; charset=utf-8');
+        echo $verify_content;
+        exit;
+    }
+}, 1);
+
 add_action('template_include', function($template) {
     if (get_query_var('jade_dealers_admin')) {
         $admin_file = get_template_directory() . '/admin.php';
