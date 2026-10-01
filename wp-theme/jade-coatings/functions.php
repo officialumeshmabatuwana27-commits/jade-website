@@ -268,6 +268,29 @@ function jade_handle_shops_api() {
 
 // Early interceptor hook on init priority 1
 add_action('init', function() {
+    // Intercept favicon.ico & favicon.png requests immediately
+    if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/favicon\.(ico|png)$#i', $_SERVER['REQUEST_URI'])) {
+        $fav_file = get_template_directory() . '/assests/jade favicon.png';
+        if (file_exists($fav_file)) {
+            status_header(200);
+            header('Content-Type: image/png');
+            header('Cache-Control: public, max-age=604800');
+            readfile($fav_file);
+            exit;
+        }
+    }
+
+    // Auto-sync favicon to ABSPATH web root so Apache serves directly
+    $fav_source = get_template_directory() . '/assests/jade favicon.png';
+    if (file_exists($fav_source)) {
+        if (!file_exists(ABSPATH . 'favicon.png')) {
+            @copy($fav_source, ABSPATH . 'favicon.png');
+        }
+        if (!file_exists(ABSPATH . 'favicon.ico')) {
+            @copy($fav_source, ABSPATH . 'favicon.ico');
+        }
+    }
+
     // Intercept Shops API requests immediately
     if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/(api/shops|shops\.json)(\?.*)?$#i', $_SERVER['REQUEST_URI'])) {
         jade_handle_shops_api();
@@ -343,4 +366,12 @@ add_action('template_include', function($template) {
         return get_template_directory() . '/index.php';
     }
     return $template;
+});
+
+// Favicon hook for standard wp_head
+add_action('wp_head', function() {
+    $fav_url = get_template_directory_uri() . '/assests/jade%20favicon.png';
+    echo '<link rel="icon" type="image/png" href="' . esc_url($fav_url) . '">' . "\n";
+    echo '<link rel="shortcut icon" type="image/png" href="' . esc_url($fav_url) . '">' . "\n";
+    echo '<link rel="apple-touch-icon" href="' . esc_url($fav_url) . '">' . "\n";
 });

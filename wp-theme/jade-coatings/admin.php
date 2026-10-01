@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard | JADE Coatings Management System</title>
-  <link rel="icon" type="image/png" href="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.png" onerror="this.onerror=null; this.href='assests/Logo.png'">
+  <link rel="icon" type="image/png" href="<?php echo function_exists('get_template_directory_uri') ? get_template_directory_uri() . '/assests/jade%20favicon.png' : 'assests/jade%20favicon.png'; ?>">
+  <link rel="shortcut icon" type="image/png" href="<?php echo function_exists('get_template_directory_uri') ? get_template_directory_uri() . '/assests/jade%20favicon.png' : 'assests/jade%20favicon.png'; ?>">
+  <link rel="apple-touch-icon" href="<?php echo function_exists('get_template_directory_uri') ? get_template_directory_uri() . '/assests/jade%20favicon.png' : 'assests/jade%20favicon.png'; ?>">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

@@ -81,7 +81,9 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JADE Coatings | Advanced Water-based Solutions</title>
-  <link rel="icon" type="image/png" href="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.png" />
+  <link rel="icon" type="image/png" href="<?php echo function_exists('get_template_directory_uri') ? get_template_directory_uri() . '/assests/jade%20favicon.png' : 'assests/jade%20favicon.png'; ?>" />
+  <link rel="shortcut icon" type="image/png" href="<?php echo function_exists('get_template_directory_uri') ? get_template_directory_uri() . '/assests/jade%20favicon.png' : 'assests/jade%20favicon.png'; ?>" />
+  <link rel="apple-touch-icon" href="<?php echo function_exists('get_template_directory_uri') ? get_template_directory_uri() . '/assests/jade%20favicon.png' : 'assests/jade%20favicon.png'; ?>" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
