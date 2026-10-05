@@ -7,7 +7,7 @@
   <link rel="icon" type="image/png" href="<?php echo function_exists('get_template_directory_uri') ? get_template_directory_uri() . '/assests/jade%20favicon.png' : 'assests/jade%20favicon.png'; ?>">
   <link rel="shortcut icon" type="image/png" href="<?php echo function_exists('get_template_directory_uri') ? get_template_directory_uri() . '/assests/jade%20favicon.png' : 'assests/jade%20favicon.png'; ?>">
   <link rel="apple-touch-icon" href="<?php echo function_exists('get_template_directory_uri') ? get_template_directory_uri() . '/assests/jade%20favicon.png' : 'assests/jade%20favicon.png'; ?>">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="<?php echo esc_url(get_template_directory_uri() . '/assests/main.min.css'); ?>" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">

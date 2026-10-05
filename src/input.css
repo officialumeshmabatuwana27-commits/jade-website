@@ -1,0 +1,275 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body, button, input, select, textarea {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    letter-spacing: -0.011em;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Manrope', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    letter-spacing: -0.025em;
+  }
+  :root {
+    --brand-green: #00A651;
+    --brand-charcoal: #231F20;
+    --brand-dark: #074626;
+    --brand-pale: #EBF8F2;
+  }
+}
+
+/* Custom UI Utilities */
+.h-18 { height: 4.5rem; }
+.sm\:h-13 { height: 3.25rem; }
+.bg-white\/98 { background-color: rgba(255, 255, 255, 0.98); }
+.shadow-xs { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
+/* Page Tab Navigation Transitions */
+.page-tab {
+  display: none;
+}
+.page-tab.active {
+  display: block;
+  animation: tabFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes tabFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.logo-shadow {
+  filter: drop-shadow(0 4px 12px rgba(0, 166, 81, 0.16));
+}
+
+/* High-Performance Before After Slider */
+.ba-container {
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  border-radius: 1rem;
+  touch-action: pan-y;
+}
+.ba-slider-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: ew-resize;
+  z-index: 20;
+  margin: 0;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+.ba-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-shadow: 0 0 10px rgba(0,0,0,0.35);
+  z-index: 15;
+  pointer-events: none;
+}
+.ba-handle-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* Sliding Logo Marquee Animation (GPU Accelerated) */
+@keyframes slideMarquee {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+.animate-slide-logos {
+  display: flex;
+  width: max-content;
+  animation: slideMarquee 26s linear infinite;
+  will-change: transform;
+}
+.animate-slide-logos:hover {
+  animation-play-state: paused;
+}
+
+/* 3D Deck Transformation Hero Animation */
+@keyframes deckTransform {
+  0%, 35% {
+    opacity: 0;
+    transform: scale(1.03) translateZ(0);
+    filter: brightness(0.92) contrast(0.95);
+  }
+  45%, 90% {
+    opacity: 1;
+    transform: scale(1) translateZ(0);
+    filter: brightness(1.04) contrast(1.04);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.03) translateZ(0);
+    filter: brightness(0.92) contrast(0.95);
+  }
+}
+@keyframes deckScanWave {
+  0%, 32% {
+    left: -20%;
+    opacity: 0;
+  }
+  38% {
+    opacity: 1;
+  }
+  48% {
+    opacity: 0.9;
+  }
+  55%, 100% {
+    left: 120%;
+    opacity: 0;
+  }
+}
+.hero-deck-3d-restored {
+  animation: deckTransform 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: opacity, transform;
+}
+.hero-deck-scanline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 120px;
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 166, 81, 0.4) 40%, rgba(255, 255, 255, 0.9) 50%, rgba(0, 166, 81, 0.4) 60%, transparent 100%);
+  animation: deckScanWave 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  transform: skewX(-20deg);
+  pointer-events: none;
+  z-index: 2;
+  filter: blur(2px);
+}
+
+/* 3D Floating Animations */
+@keyframes float3DCan {
+  0%, 100% {
+    transform: translateY(0px) rotateY(-8deg) rotateX(4deg) scale(1);
+  }
+  50% {
+    transform: translateY(-16px) rotateY(12deg) rotateX(-2deg) scale(1.03);
+  }
+}
+@keyframes orbitSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.35; transform: scale(0.95); }
+  50% { opacity: 0.75; transform: scale(1.1); }
+}
+.animate-float-3d {
+  animation: float3DCan 6s ease-in-out infinite;
+  will-change: transform;
+}
+.animate-orbit-ring {
+  animation: orbitSpin 18s linear infinite;
+  will-change: transform;
+}
+.animate-pulse-glow {
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+
+/* 3D Mascot Character Floating */
+@keyframes float3DMascot {
+  0%, 100% {
+    transform: translateY(0px) rotateY(-6deg) rotateX(3deg) scale(1);
+  }
+  25% {
+    transform: translateY(-14px) rotateY(4deg) rotateX(-2deg) scale(1.02);
+  }
+  50% {
+    transform: translateY(-22px) rotateY(10deg) rotateX(1deg) scale(1.04);
+  }
+  75% {
+    transform: translateY(-10px) rotateY(-2deg) rotateX(-1deg) scale(1.01);
+  }
+}
+@keyframes mascotGroundShadow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(0.75);
+    opacity: 0.25;
+  }
+}
+.animate-mascot-3d {
+  animation: float3DMascot 5s ease-in-out infinite;
+  will-change: transform;
+}
+.animate-mascot-shadow {
+  animation: mascotGroundShadow 5s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* Tablet Optimizations (iPad, Galaxy Tab, 768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  button, a, input, select {
+    touch-action: manipulation;
+  }
+  .ba-slider-input {
+    touch-action: pan-y;
+  }
+  html, body {
+    overflow-x: hidden;
+  }
+  /* Optimal tablet padding */
+  .tab-card {
+    padding: 1.5rem;
+  }
+}
+
+/* Admin Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

@@ -16,267 +16,15 @@
   <link rel="apple-touch-icon" href="assests/jade%20favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap"></noscript>
+  <link rel="preload" as="image" href="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/deck-weathered.jpg" fetchpriority="high">
   <script>
     document.documentElement.classList.remove('dark');
     try { localStorage.removeItem('jade-theme'); } catch(e) {}
   </script>
-  <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet" />
-  <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-            heading: ['Manrope', 'Inter', 'sans-serif'],
-          },
-          colors: {
-            brand: {
-              DEFAULT: '#00A651', // Exact Logo Green
-              hover: '#008F45',
-              dark: '#074626',
-              deep: '#032613',
-              pale: '#EBF8F2',
-              light: '#bbf1d5',
-              charcoal: '#231F20', // Exact Logo Typography Black
-            },
-            dark: {
-              bg: '#0B0F17',
-              card: '#131B26',
-              surface: '#1A2433',
-              border: '#233044',
-            }
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    body, button, input, select, textarea {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      letter-spacing: -0.011em;
-    }
-    h1, h2, h3, h4, h5, h6 {
-      font-family: 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      letter-spacing: -0.025em;
-    }
-    :root {
-      --brand-green: #00A651;
-      --brand-charcoal: #231F20;
-      --brand-dark: #074626;
-      --brand-pale: #EBF8F2;
-    }
-    .page-tab { display: none; }
-    .page-tab.active { display: block; animation: fadeIn 0.25s ease-out forwards; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .logo-shadow {
-      filter: drop-shadow(0 6px 16px rgba(0, 166, 81, 0.18));
-    }
-    /* Before After Slider Styling */
-    .ba-container {
-      position: relative;
-      overflow: hidden;
-      user-select: none;
-      border-radius: 1rem;
-    }
-    .ba-slider-input {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      cursor: ew-resize;
-      z-index: 20;
-      margin: 0;
-      touch-action: pan-y;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .ba-handle {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: rgba(255, 255, 255, 0.45);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
-      z-index: 15;
-      pointer-events: none;
-    }
-    .ba-handle-btn {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.25);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      color: #FFFFFF;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: -1px;
-      border: 1.5px solid rgba(255, 255, 255, 0.85);
-      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-    }
-    /* Sliding Logo Marquee Animation */
-    @keyframes slideMarquee {
-      0% {
-        transform: translateX(0%);
-      }
-      100% {
-        transform: translateX(-50%);
-      }
-    }
-    .animate-slide-logos {
-      display: flex;
-      width: max-content;
-      animation: slideMarquee 26s linear infinite;
-      will-change: transform;
-    }
-    .animate-slide-logos:hover {
-      animation-play-state: paused;
-    }
-    /* 3D Deck Transformation Hero Animation */
-    @keyframes deckTransform {
-      0%, 35% {
-        opacity: 0;
-        transform: scale(1.04) rotateX(2deg);
-        filter: brightness(0.9) contrast(0.95);
-      }
-      45%, 90% {
-        opacity: 1;
-        transform: scale(1) rotateX(0deg);
-        filter: brightness(1.05) contrast(1.05);
-      }
-      100% {
-        opacity: 0;
-        transform: scale(1.04) rotateX(2deg);
-        filter: brightness(0.9) contrast(0.95);
-      }
-    }
-    @keyframes deckScanWave {
-      0%, 32% {
-        left: -20%;
-        opacity: 0;
-      }
-      38% {
-        opacity: 1;
-      }
-      48% {
-        opacity: 0.9;
-      }
-      55%, 100% {
-        left: 120%;
-        opacity: 0;
-      }
-    }
-    .hero-deck-3d-restored {
-      animation: deckTransform 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-      will-change: opacity, transform, filter;
-    }
-    .hero-deck-scanline {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 120px;
-      background: linear-gradient(90deg, transparent 0%, rgba(0, 166, 81, 0.4) 40%, rgba(255, 255, 255, 0.9) 50%, rgba(0, 166, 81, 0.4) 60%, transparent 100%);
-      animation: deckScanWave 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-      transform: skewX(-20deg);
-      pointer-events: none;
-      z-index: 2;
-      filter: blur(2px);
-    }
-    /* 3D Product Hero Floating Can and Orbital Rings */
-    @keyframes float3DCan {
-      0%, 100% {
-        transform: translateY(0px) rotateY(-8deg) rotateX(4deg) scale(1);
-      }
-      50% {
-        transform: translateY(-16px) rotateY(12deg) rotateX(-2deg) scale(1.03);
-      }
-    }
-    @keyframes orbitSpin {
-      0% {
-        transform: rotate(0deg) scale(1);
-      }
-      50% {
-        transform: rotate(180deg) scale(1.05);
-      }
-      100% {
-        transform: rotate(360deg) scale(1);
-      }
-    }
-    @keyframes pulseGlow {
-      0%, 100% {
-        opacity: 0.35;
-        transform: scale(0.95);
-      }
-      50% {
-        opacity: 0.75;
-        transform: scale(1.1);
-      }
-    }
-    .animate-float-3d {
-      animation: float3DCan 6s ease-in-out infinite;
-      transform-style: preserve-3d;
-      will-change: transform;
-    }
-    .animate-orbit-ring {
-      animation: orbitSpin 18s linear infinite;
-      will-change: transform;
-    }
-    .animate-pulse-glow {
-      animation: pulseGlow 4s ease-in-out infinite;
-    }
-    /* 3D Mascot Character Floating & Interactive Rotation */
-    @keyframes float3DMascot {
-      0%, 100% {
-        transform: translateY(0px) rotateY(-6deg) rotateX(3deg) scale(1);
-      }
-      25% {
-        transform: translateY(-14px) rotateY(4deg) rotateX(-2deg) scale(1.02);
-      }
-      50% {
-        transform: translateY(-22px) rotateY(10deg) rotateX(1deg) scale(1.04);
-      }
-      75% {
-        transform: translateY(-10px) rotateY(-2deg) rotateX(-1deg) scale(1.01);
-      }
-    }
-    @keyframes mascotGroundShadow {
-      0%, 100% {
-        transform: scale(1);
-        opacity: 0.55;
-      }
-      50% {
-        transform: scale(0.75);
-        opacity: 0.25;
-      }
-    }
-    .animate-mascot-3d {
-      animation: float3DMascot 5s ease-in-out infinite;
-      transform-style: preserve-3d;
-      will-change: transform;
-    }
-    .animate-mascot-shadow {
-      animation: mascotGroundShadow 5s ease-in-out infinite;
-      will-change: transform, opacity;
-    }
-  </style>
+  <link rel="stylesheet" href="assests/main.min.css" />
 </head>
 <body class="bg-[#FAFCFA] dark:bg-[#0B0F17] text-[#231F20] dark:text-slate-100 font-sans antialiased selection:bg-[#00A651] selection:text-white min-h-screen flex flex-col transition-colors duration-200">
 
@@ -345,7 +93,7 @@
       </div>
 
       <!-- Mobile Dropdown Menu -->
-      <div id="mobile-menu" class="hidden lg:hidden py-4 border-t border-gray-100 dark:border-slate-800 dark:bg-[#131B26] rounded-2xl px-2 mt-2 space-y-1">
+      <div id="mobile-menu" class="hidden lg:hidden py-4 border-t border-gray-100 dark:border-slate-800 dark:bg-[#131B26] rounded-2xl px-3 mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
         <button onclick="navigateTo('home'); toggleMobileMenu();" class="block w-full text-left px-4 py-2.5 text-sm font-semibold text-[#00A651] bg-[#EBF8F2] rounded-xl">Home</button>
         <button onclick="navigateTo('about'); toggleMobileMenu();" class="block w-full text-left px-4 py-2.5 text-sm font-medium text-[#231F20] hover:bg-[#EBF8F2] rounded-xl">About Us</button>
         <button onclick="navigateTo('products'); toggleMobileMenu();" class="block w-full text-left px-4 py-2.5 text-sm font-medium text-[#231F20] hover:bg-[#EBF8F2] rounded-xl">Products</button>
@@ -399,7 +147,7 @@
           <span>Pioneering Water-Borne Technology Since 2015</span>
         </div>
 
-        <h1 class="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight text-white max-w-4xl mx-auto leading-tight sm:leading-none drop-shadow-md">
+        <h1 class="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-4xl mx-auto leading-tight md:leading-tight drop-shadow-md">
           Coatings that brings out the <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-teal-200 to-white">best</span>
         </h1>
 
@@ -508,7 +256,7 @@
 
     <section class="py-16 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 lg:gap-12 items-center">
           <div>
             <span class="text-xs uppercase font-extrabold tracking-widest text-[#00A651]">Who We Are</span>
             <h2 class="text-3xl font-bold tracking-tight text-[#231F20] dark:text-white mt-2 leading-tight">Global Expertise Combined with Local Excellence</h2>
@@ -621,10 +369,10 @@
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="bg-white dark:bg-[#131B26] rounded-3xl p-6 sm:p-10 lg:p-12 shadow-xl border border-gray-200 dark:border-slate-800">
           
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 lg:gap-10">
             
             <!-- Calculator Inputs (7 Cols) -->
-            <div class="lg:col-span-7 space-y-6">
+            <div class="md:col-span-7 lg:col-span-7 space-y-6">
               <h2 class="text-lg sm:text-xl font-bold font-bold tracking-tight text-[#231F20] dark:text-white border-b border-gray-100 dark:border-slate-800 pb-3 flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-[#00A651]"></span>
                 <span>Enter Your Project Parameters</span>
@@ -675,7 +423,7 @@
             </div>
 
             <!-- Calculator Results Card (5 Cols) -->
-            <div class="lg:col-span-5 bg-gradient-to-br from-[#074626] to-[#032613] text-white rounded-3xl p-8 flex flex-col justify-between shadow-lg relative overflow-hidden">
+            <div class="md:col-span-5 lg:col-span-5 bg-gradient-to-br from-[#074626] to-[#032613] text-white rounded-3xl p-8 flex flex-col justify-between shadow-lg relative overflow-hidden">
               <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-[#00A651]/20 rounded-full blur-2xl"></div>
 
               <div>
@@ -739,7 +487,7 @@
           <span class="text-xs uppercase font-extrabold tracking-widest text-[#00A651]">Landmark Projects</span>
           <h2 class="text-3xl font-bold tracking-tight text-[#231F20] dark:text-white mt-1">Featured Hospitality & Resort Work</h2>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" id="projects-container"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8" id="projects-container"></div>
       </div>
     </section>
 
@@ -770,7 +518,7 @@
             </div>
           </div>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="clients-container"></div>
+        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6" id="clients-container"></div>
       </div>
     </section>
   </main>
@@ -791,8 +539,8 @@
 
     <section class="py-16 bg-[#F4F9F6] dark:bg-[#0B0F17] transition-colors">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          <div class="lg:col-span-7 bg-white p-8 sm:p-10 rounded-3xl border border-gray-200/80 shadow-sm">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 lg:gap-12">
+          <div class="md:col-span-7 lg:col-span-7 bg-white p-8 sm:p-10 rounded-3xl border border-gray-200/80 shadow-sm">
             <!-- 1-Click WhatsApp Quick Contact Banner -->
             <div class="p-4 sm:p-5 rounded-2xl bg-[#EBF8F2] border border-[#25D366]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div class="flex items-center gap-3.5">
@@ -869,7 +617,7 @@
             </form>
           </div>
 
-          <div class="lg:col-span-5 space-y-6">
+          <div class="md:col-span-5 lg:col-span-5 space-y-6">
             <div class="bg-white p-8 rounded-3xl border border-gray-200/80 shadow-sm space-y-6">
               <h3 class="text-xl font-bold tracking-tight text-[#231F20] dark:text-white border-b border-gray-100 dark:border-slate-800 pb-4">Corporate Office</h3>
               
@@ -1015,9 +763,9 @@
       </div>
 
       <!-- Main Content: Split Shops List & Mapbox Map -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-start">
         <!-- Left: List of Stores (5 cols on desktop; toggled on mobile/tablet) -->
-        <div id="shops-list-column" class="block lg:block lg:col-span-5 space-y-4">
+        <div id="shops-list-column" class="block md:block md:col-span-5 lg:col-span-5 space-y-4">
           <div class="pb-2 border-b border-gray-200 flex items-center justify-between">
             <div>
               <h2 class="text-xl font-extrabold text-[#231F20]">Available Shops</h2>
@@ -1026,7 +774,7 @@
             <button
               type="button"
               onclick="setMobileShopsView('map')"
-              class="lg:hidden text-xs font-bold text-[#00A651] bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-xl border border-emerald-200 flex items-center gap-1 transition-colors"
+              class="md:hidden text-xs font-bold text-[#00A651] bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-xl border border-emerald-200 flex items-center gap-1 transition-colors"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
               <span>View Map</span>
@@ -1038,13 +786,13 @@
         </div>
 
         <!-- Right: Mapbox Map Container (7 cols on desktop; toggled on mobile/tablet) -->
-        <div id="shops-map-column" class="hidden lg:block lg:col-span-7 sticky top-24">
+        <div id="shops-map-column" class="hidden md:block md:col-span-7 lg:col-span-7 sticky top-24">
           <div class="bg-white p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 relative">
             <!-- Mobile Quick Return to List Button (Floating inside map) -->
             <button
               type="button"
               onclick="setMobileShopsView('list')"
-              class="lg:hidden absolute top-5 left-5 z-10 bg-white/95 backdrop-blur-md px-3.5 py-2 rounded-xl shadow-md border border-gray-200 text-xs font-bold text-gray-800 flex items-center gap-1.5 active:scale-95 transition-all"
+              class="md:hidden absolute top-5 left-5 z-10 bg-white/95 backdrop-blur-md px-3.5 py-2 rounded-xl shadow-md border border-gray-200 text-xs font-bold text-gray-800 flex items-center gap-1.5 active:scale-95 transition-all"
             >
               <svg class="w-3.5 h-3.5 text-[#00A651]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
               <span>Back to List</span>
@@ -1993,7 +1741,7 @@
       if (pageId === 'shops') {
         setTimeout(() => {
           if (!shopMapInstance) {
-            initShopMap();
+            initShopsMap();
           } else {
             shopMapInstance.resize();
           }
@@ -2065,7 +1813,7 @@
             <!-- STATIC IMAGE PREVIEW (No slider) -->
             <div class="mb-4">
               <div class="relative h-44 sm:h-48 w-full rounded-2xl overflow-hidden shadow-inner border border-gray-200 bg-slate-900 flex items-center justify-center">
-                <img src="${getAssetUrl(p.image)}" onerror="this.onerror=null; this.src='assests/' + encodeURIComponent('${p.image}')" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="${p.name}" />
+                <img src="${getAssetUrl(p.image)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src=\'assests/\' + encodeURIComponent(\'${p.image}\')" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="${p.name}" />
                 <span class="absolute bottom-2 right-2.5 px-2.5 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-black/60 text-white border border-white/20 backdrop-blur-md shadow-sm">Industrial Tyre Solution</span>
               </div>
               <p class="text-[10px] text-gray-400 text-center mt-1 italic">Water-based green tire lubrication & release</p>
@@ -2081,13 +1829,13 @@
               <div class="ba-container relative h-44 sm:h-48 w-full shadow-inner border border-gray-200" id="ba-box-${p.id}">
                 <!-- AFTER IMAGE / VIEW (Background) -->
                 <div class="absolute inset-0 bg-cover bg-center overflow-hidden flex items-center justify-center ${p.afterImage ? 'bg-gray-100' : 'bg-gradient-to-br ' + p.afterColor}">
-                  ${p.afterImage ? `<img src="${getAssetUrl(p.afterImage)}" onerror="this.onerror=null; this.src='assests/' + encodeURIComponent('${p.afterImage}')" class="w-full h-full object-cover" />` : `<img src="${getAssetUrl(p.image)}" onerror="this.style.display='none'" class="w-full h-full object-cover opacity-90 mix-blend-overlay" />`}
+                  ${p.afterImage ? `<img src="${getAssetUrl(p.afterImage)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src=\'assests/\' + encodeURIComponent(\'${p.afterImage}\')" class="w-full h-full object-cover" />` : `<img src="${getAssetUrl(p.image)}" onerror="this.style.display='none'" class="w-full h-full object-cover opacity-90 mix-blend-overlay" />`}
                   <span class="absolute bottom-2 right-2.5 px-2.5 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-black/40 text-white border border-white/20 backdrop-blur-md z-10 shadow-sm">AFTER</span>
                 </div>
 
                 <!-- BEFORE IMAGE / VIEW (Foreground Clip) -->
                 <div class="absolute inset-0 bg-cover bg-center overflow-hidden flex items-center justify-center ${p.beforeImage ? 'bg-gray-100' : 'bg-gradient-to-br ' + p.beforeColor}" id="ba-before-${p.id}" style="clip-path: inset(0 50% 0 0);">
-                  ${p.beforeImage ? `<img src="${getAssetUrl(p.beforeImage)}" onerror="this.onerror=null; this.src='assests/' + encodeURIComponent('${p.beforeImage}')" class="w-full h-full object-cover" />` : `<img src="${getAssetUrl(p.image)}" onerror="this.style.display='none'" class="w-full h-full object-cover filter grayscale contrast-75 opacity-70" />`}
+                  ${p.beforeImage ? `<img src="${getAssetUrl(p.beforeImage)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src=\'assests/\' + encodeURIComponent(\'${p.beforeImage}\')" class="w-full h-full object-cover" />` : `<img src="${getAssetUrl(p.image)}" onerror="this.style.display='none'" class="w-full h-full object-cover filter grayscale contrast-75 opacity-70" />`}
                   <span class="absolute bottom-2 left-2.5 px-2.5 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-black/40 text-white border border-white/20 backdrop-blur-md z-10 shadow-sm">BEFORE</span>
                 </div>
 
@@ -2554,7 +2302,7 @@
           <div>
             ${proj.logo ? `
             <div class="h-24 w-full flex items-center justify-center p-3 rounded-2xl bg-gray-50/80 dark:bg-slate-900/60 border border-gray-100 dark:border-slate-800 mb-4 group-hover:bg-[#EBF8F2]/50 transition-colors">
-              <img src="${getAssetUrl(proj.logo)}" onerror="this.onerror=null; this.src='assests/' + encodeURIComponent('${proj.logo}')" alt="${proj.name} logo" class="max-h-20 max-w-[220px] w-auto object-contain transition-transform duration-300 hover:scale-105" />
+              <img src="${getAssetUrl(proj.logo)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src=\'assests/\' + encodeURIComponent(\'${proj.logo}\')" alt="${proj.name} logo" class="max-h-20 max-w-[220px] w-auto object-contain transition-transform duration-300 hover:scale-105" />
             </div>
             ` : `
             <div class="h-11 w-11 rounded-2xl bg-[#EBF8F2] text-[#00A651] flex items-center justify-center font-bold mb-4 shadow-sm">
@@ -2582,7 +2330,7 @@
         // 100% Scaled up logo frame and dimensions
         const logoHtml = client.logo 
           ? `<div class="h-24 w-full flex items-center justify-center p-4 rounded-xl bg-gray-50/80 dark:bg-slate-900/60 border border-gray-100 dark:border-slate-800 group-hover:bg-[#EBF8F2]/50 dark:group-hover:bg-emerald-950/20 group-hover:border-[#00A651]/30 transition-colors mb-4">
-               <img src="${getAssetUrl(client.logo)}" onerror="this.onerror=null; this.src='assests/' + encodeURIComponent('${client.logo}')" alt="${client.name} logo" class="max-h-20 max-w-[220px] w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
+               <img src="${getAssetUrl(client.logo)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src=\'assests/\' + encodeURIComponent(\'${client.logo}\')" alt="${client.name} logo" class="max-h-20 max-w-[220px] w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
              </div>`
           : `<div class="h-24 w-full flex items-center justify-center mb-4">
                <div class="w-14 h-14 rounded-xl bg-[#EBF8F2] dark:bg-emerald-950/40 text-[#00A651] dark:text-emerald-400 flex items-center justify-center font-black tracking-tight text-2xl">
@@ -2607,14 +2355,14 @@
       const homeSlider = document.getElementById('home-sliding-logos');
       if (homeSlider) {
         homeSlider.innerHTML = '';
-        const repeatedClients = [...CLIENTS, ...CLIENTS, ...CLIENTS];
+        const repeatedClients = [...CLIENTS, ...CLIENTS];
         repeatedClients.forEach(client => {
           const item = document.createElement('div');
           item.className = "group inline-flex items-center gap-4 px-6 py-4 rounded-2xl bg-white dark:bg-[#131B26] border border-gray-100 dark:border-slate-800 hover:border-[#00A651]/40 shadow-xs hover:shadow-lg transition-all duration-300 cursor-pointer hover:-translate-y-1";
           
           if (client.logo) {
             item.innerHTML = `
-              <img src="${getAssetUrl(client.logo)}" onerror="this.onerror=null; this.src='assests/' + encodeURIComponent('${client.logo}')" alt="${client.name} logo" class="h-12 sm:h-14 max-w-[180px] w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
+              <img src="${getAssetUrl(client.logo)}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src=\'assests/\' + encodeURIComponent(\'${client.logo}\')" alt="${client.name} logo" class="h-12 sm:h-14 max-w-[180px] w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
               <span class="font-bold text-sm sm:text-base text-[#231F20] dark:text-slate-200 group-hover:text-[#00A651] transition-colors">${client.name}</span>
             `;
           } else {
@@ -2830,8 +2578,45 @@
       };
     }
 
+        // High-Performance Dynamic On-Demand Mapbox Loader
+    let isMapboxLoading = false;
+    let mapboxLoadedCallbacks = [];
+    function loadMapboxLibrary(callback) {
+      if (window.mapboxgl) {
+        if (callback) callback();
+        return;
+      }
+      if (callback) mapboxLoadedCallbacks.push(callback);
+      if (isMapboxLoading) return;
+      isMapboxLoading = true;
+
+      if (!document.getElementById('mapbox-css')) {
+        const link = document.createElement('link');
+        link.id = 'mapbox-css';
+        link.rel = 'stylesheet';
+        link.href = 'https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css';
+        document.head.appendChild(link);
+      }
+
+      if (!document.getElementById('mapbox-js')) {
+        const script = document.createElement('script');
+        script.id = 'mapbox-js';
+        script.src = 'https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js';
+        script.async = true;
+        script.onload = () => {
+          isMapboxLoading = false;
+          mapboxLoadedCallbacks.forEach(cb => { try { cb(); } catch(e){} });
+          mapboxLoadedCallbacks = [];
+        };
+        document.head.appendChild(script);
+      }
+    }
+
     // Mapbox Initializer
     function initShopsMap() {
+      loadMapboxLibrary(() => { realInitShopsMap(); });
+    }
+    function realInitShopsMap() {
       const mapContainer = document.getElementById('mapbox-shops-map') || document.getElementById('google-shops-map');
       if (!mapContainer || !window.mapboxgl) return;
 
@@ -3524,7 +3309,8 @@
       renderProjectsAndClients();
       runCalculator();
       renderShops();
-      initShopsMap();
+      // Idle background prefetch of map resources
+      if ('requestIdleCallback' in window) { requestIdleCallback(() => { loadMapboxLibrary(); }, { timeout: 3500 }); } else { setTimeout(() => { loadMapboxLibrary(); }, 2500); }
       syncFromCloudDatabase();
 
       // Check initial URL route

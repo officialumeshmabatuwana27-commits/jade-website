@@ -9,6 +9,11 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// 10x Performance: Output Compression
+if (!ob_get_level() && !headers_sent() && extension_loaded('zlib') && !ini_get('zlib.output_compression')) {
+    ob_start('ob_gzhandler');
+}
+
 function jade_coatings_setup() {
     add_theme_support('post-thumbnails');
 }
@@ -375,3 +380,35 @@ add_action('wp_head', function() {
     echo '<link rel="shortcut icon" type="image/png" href="' . esc_url($fav_url) . '">' . "\n";
     echo '<link rel="apple-touch-icon" href="' . esc_url($fav_url) . '">' . "\n";
 });
+
+// 10x Performance: HTTP Browser Caching & Compression Headers
+add_action('send_headers', function() {
+    if (!is_admin()) {
+        $uri = $_SERVER['REQUEST_URI'] ?? '';
+        if (preg_match('/\.(css|js|png|jpg|jpeg|gif|ico|svg|woff2?|webp|mp4)$/i', $uri)) {
+            header('Cache-Control: public, max-age=31536000, immutable');
+        } else {
+            header('Cache-Control: public, max-age=600, stale-while-revalidate=86400');
+        }
+    }
+});
+
+// 10x Performance: Strip WordPress Bloat & Unused Front-end Scripts
+add_action('init', function() {
+    remove_action('wp_head', 'wp_generator');
+    remove_action('wp_head', 'wlwmanifest_link');
+    remove_action('wp_head', 'rsd_link');
+    remove_action('wp_head', 'wp_shortlink_wp_head');
+    remove_action('wp_head', 'print_emoji_detection_script', 7);
+    remove_action('wp_print_styles', 'print_emoji_styles');
+    remove_action('admin_print_scripts', 'print_emoji_detection_script');
+    remove_action('admin_print_styles', 'print_emoji_styles');
+    add_filter('emoji_svg_url', '__return_false');
+});
+
+add_action('wp_enqueue_scripts', function() {
+    wp_dequeue_style('wp-block-library');
+    wp_dequeue_style('wp-block-library-theme');
+    wp_dequeue_style('wc-blocks-style');
+    wp_dequeue_style('global-styles');
+}, 100);
