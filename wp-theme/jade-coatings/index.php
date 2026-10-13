@@ -1512,7 +1512,8 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
         afterColor: "from-[#00A651] to-[#074626]",
         beforeImage: "Masoguard All in one Before.png",
         afterImage: "After Masoguard All in one After.png",
-        image: "After Masoguard All in one After.png"
+        image: "After Masoguard All in one After.png",
+        tdsFile: "JADE_Masoguard_All_In_One_TDS.pdf"
       },
       { 
         id: 11, 

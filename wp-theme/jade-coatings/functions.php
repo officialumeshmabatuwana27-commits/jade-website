@@ -297,22 +297,25 @@ add_action('init', function() {
     }
 
     // Intercept TDS PDF direct requests immediately
-    if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/JADE_Woodshield_All_In_One_TDS\.pdf$#i', parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH))) {
-        $tds_file = get_template_directory() . '/assests/JADE_Woodshield_All_In_One_TDS.pdf';
+    if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/(JADE_[A-Za-z0-9_]+_TDS\.pdf)$#i', parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), $matches)) {
+        $pdf_name = $matches[1];
+        $tds_file = get_template_directory() . '/assests/' . $pdf_name;
         if (file_exists($tds_file)) {
             status_header(200);
             header('Content-Type: application/pdf');
-            header('Content-Disposition: inline; filename="JADE_Woodshield_All_In_One_TDS.pdf"');
+            header('Content-Disposition: inline; filename="' . $pdf_name . '"');
             header('Cache-Control: public, max-age=31536000, immutable');
             readfile($tds_file);
             exit;
         }
     }
 
-    // Auto-sync TDS PDF to ABSPATH web root
-    $tds_source = get_template_directory() . '/assests/JADE_Woodshield_All_In_One_TDS.pdf';
-    if (file_exists($tds_source) && !file_exists(ABSPATH . 'JADE_Woodshield_All_In_One_TDS.pdf')) {
-        @copy($tds_source, ABSPATH . 'JADE_Woodshield_All_In_One_TDS.pdf');
+    // Auto-sync TDS PDFs to ABSPATH web root
+    foreach (['JADE_Woodshield_All_In_One_TDS.pdf', 'JADE_Masoguard_All_In_One_TDS.pdf'] as $pdf_doc) {
+        $tds_source = get_template_directory() . '/assests/' . $pdf_doc;
+        if (file_exists($tds_source) && !file_exists(ABSPATH . $pdf_doc)) {
+            @copy($tds_source, ABSPATH . $pdf_doc);
+        }
     }
 
     // Intercept Shops API requests immediately
