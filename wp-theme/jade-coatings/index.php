@@ -219,7 +219,7 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
         </div>
 
         <h1 class="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-4xl mx-auto leading-tight md:leading-tight drop-shadow-md">
-          Coatings that brings out the <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-teal-200 to-white">best</span>
+          Coatings that bring out the <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-teal-200 to-white">best</span>
         </h1>
 
         <p class="mt-4 sm:mt-6 text-lg sm:text-2xl text-white/90 font-light italic max-w-2xl mx-auto drop-shadow-sm">
@@ -1020,7 +1020,7 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
             A brand of Colour Max Lanka Pvt Ltd. Pioneers in water-based, eco-friendly coating technology in Sri Lanka since 2015.
           </p>
           <p class="text-xs text-[#00A651] font-semibold">
-            &ldquo;The Correct Touch&rdquo; · &ldquo;Coatings that brings out the best&rdquo;
+            &ldquo;The Correct Touch&rdquo; · &ldquo;Coatings that bring out the best&rdquo;
           </p>
 
           <!-- Social Media Links -->
