@@ -311,10 +311,13 @@ add_action('init', function() {
     }
 
     // Auto-sync TDS PDFs to ABSPATH web root
-    foreach (['JADE_Woodshield_All_In_One_TDS.pdf', 'JADE_Masoguard_All_In_One_TDS.pdf'] as $pdf_doc) {
-        $tds_source = get_template_directory() . '/assests/' . $pdf_doc;
-        if (file_exists($tds_source) && !file_exists(ABSPATH . $pdf_doc)) {
-            @copy($tds_source, ABSPATH . $pdf_doc);
+    $all_tds = glob(get_template_directory() . '/assests/*TDS*.pdf');
+    if ($all_tds) {
+        foreach ($all_tds as $tds_source) {
+            $base = basename($tds_source);
+            if (!file_exists(ABSPATH . $base)) {
+                @copy($tds_source, ABSPATH . $base);
+            }
         }
     }
 

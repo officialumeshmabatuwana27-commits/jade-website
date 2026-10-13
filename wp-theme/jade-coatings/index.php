@@ -1258,7 +1258,8 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
         afterColor: "from-amber-800 to-amber-950",
         beforeImage: "JADE Woodshield stain before.png",
         afterImage: "JADE Woodshield stain after.png",
-        image: "JADE Woodshield stain after.png"
+        image: "JADE Woodshield stain after.png",
+        tdsFile: "JADE_Woodshield_Stain_TDS.pdf"
       },
       { 
         id: 3, 
@@ -1323,7 +1324,8 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
         afterColor: "from-amber-500 to-amber-700",
         beforeImage: "JADE woodshield top coat before.png",
         afterImage: "JADE woodshield top coat After.png",
-        image: "JADE woodshield top coat After.png"
+        image: "JADE woodshield top coat After.png",
+        tdsFile: "JADE_Woodshield_Top_Coat_TDS.pdf"
       },
       { 
         id: 5, 
@@ -1440,7 +1442,8 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
         afterColor: "from-stone-800 to-emerald-950",
         beforeImage: "Wet Look Paving Sealer Before.png",
         afterImage: "Wet Look Paving Sealer After.png",
-        image: "Wet Look Paving Sealer After.png"
+        image: "Wet Look Paving Sealer After.png",
+        tdsFile: "JADE_Wet_Look_Paving_Sealer_TDS.pdf"
       },
       { 
         id: 9, 
@@ -1471,7 +1474,8 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
         afterColor: "from-emerald-800 to-[#074626]",
         beforeImage: "Masoguard Primer Before.png",
         afterImage: "Masoguard Primer After.png",
-        image: "Masoguard Primer After.png"
+        image: "Masoguard Primer After.png",
+        tdsFile: "JADE_Masoguard_Primer_TDS.pdf"
       },
       { 
         id: 10, 
@@ -1659,7 +1663,8 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
         afterColor: "from-[#00A651] to-emerald-800",
         beforeImage: "JADE Roof & WAll Shield Before.png",
         afterImage: "JADE Roof & WAll Shield After.png",
-        image: "JADE Roof & WAll Shield After.png"
+        image: "JADE Roof & WAll Shield After.png",
+        tdsFile: "JADE_Roof_and_Wall_Shield_TDS.pdf"
       },
 
       // DIVISION 2: INDUSTRIAL
@@ -1693,7 +1698,8 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
         afterColor: "from-[#231F20] to-black",
         beforeImage: "Anti Corrosive - Black Before.png",
         afterImage: "Anti Corrosive - Black After.png",
-        image: "Anti Corrosive - Black After.png"
+        image: "Anti Corrosive - Black After.png",
+        tdsFile: "JADE_Metashield_Anti_Corrosive_TDS.pdf"
       },
       { 
         id: 18, 
