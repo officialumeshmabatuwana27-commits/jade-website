@@ -407,7 +407,7 @@ add_action('send_headers', function() {
         if (preg_match('/\.(css|js|png|jpg|jpeg|gif|ico|svg|woff2?|webp|mp4|pdf)$/i', $uri)) {
             header('Cache-Control: public, max-age=31536000, immutable');
         } else {
-            header('Cache-Control: public, max-age=600, stale-while-revalidate=86400');
+            header('Cache-Control: no-cache, must-revalidate, max-age=0');
         }
     }
 });
