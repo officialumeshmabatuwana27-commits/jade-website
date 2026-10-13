@@ -19,7 +19,8 @@
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap"></noscript>
-  <link rel="preload" as="image" href="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/deck-weathered.jpg" fetchpriority="high">
+  <link rel="preload" as="image" href="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.webp" type="image/webp" fetchpriority="high">
+  <link rel="preload" as="image" href="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/deck-weathered.webp" type="image/webp" fetchpriority="high">
   <script>
     document.documentElement.classList.remove('dark');
     try { localStorage.removeItem('jade-theme'); } catch(e) {}
@@ -58,12 +59,17 @@
         <!-- Responsive Balanced Logo -->
         <a href="javascript:void(0)" onclick="navigateTo('home')" class="flex items-center py-2 group">
           <div class="bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl flex items-center transition-transform duration-200 group-hover:scale-105 shadow-sm border border-emerald-50">
-            <img
-              src="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.png"
-              onerror="this.onerror=null; this.src='assests/Logo.png'"
-              alt="JADE Coatings Logo"
-              class="h-10 sm:h-12 md:h-14 w-auto object-contain"
-            />
+            <picture>
+              <source srcset="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.webp" type="image/webp">
+              <img
+                src="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.png"
+                onerror="this.onerror=null; this.src='assests/Logo.png'"
+                alt="JADE Coatings Logo"
+                class="h-10 sm:h-12 md:h-14 w-auto object-contain"
+                width="200" height="56"
+                fetchpriority="high"
+              />
+            </picture>
           </div>
         </a>
 
@@ -117,20 +123,27 @@
       <!-- 3D Animated Deck Transformation Background -->
       <div class="absolute inset-0 z-0 overflow-hidden" style="perspective: 1000px;">
         <!-- State 1: Dried Out / Weathered Wooden Deck (Base Layer) -->
-        <img
-          src="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/deck-weathered.jpg"
-          onerror="this.onerror=null; this.src='assests/deck-weathered.jpg'"
-          alt="Weathered Dried Out Wooden Deck"
-          class="absolute inset-0 w-full h-full object-cover object-center scale-105"
-        />
+        <picture>
+          <source srcset="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/deck-weathered.webp" type="image/webp">
+          <img
+            src="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/deck-weathered.jpg"
+            onerror="this.onerror=null; this.src='assests/deck-weathered.jpg'"
+            alt="Weathered Dried Out Wooden Deck"
+            class="absolute inset-0 w-full h-full object-cover object-center scale-105"
+            fetchpriority="high"
+          />
+        </picture>
 
         <!-- State 2: Elegant Coated Wooden Deck (3D Transformed Layer) -->
-        <img
-          src="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/deck-restored.jpg"
-          onerror="this.onerror=null; this.src='assests/deck-restored.jpg'"
-          alt="Restored Elegant Golden Teak Wooden Deck"
-          class="hero-deck-3d-restored absolute inset-0 w-full h-full object-cover object-center"
-        />
+        <picture>
+          <source srcset="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/deck-restored.webp" type="image/webp">
+          <img
+            src="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/deck-restored.jpg"
+            onerror="this.onerror=null; this.src='assests/deck-restored.jpg'"
+            alt="Restored Elegant Golden Teak Wooden Deck"
+            class="hero-deck-3d-restored absolute inset-0 w-full h-full object-cover object-center"
+          />
+        </picture>
 
         <!-- 3D Energy Transformation Scanline -->
         <div class="hero-deck-scanline"></div>
@@ -938,12 +951,17 @@
         <!-- Brand with Balanced Logo -->
         <div class="sm:col-span-2 space-y-4">
           <div class="bg-white px-3 py-2 rounded-xl inline-flex shadow-sm border border-white/20">
-            <img
-              src="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.png"
-              onerror="this.onerror=null; this.src='assests/Logo.png'"
-              alt="JADE Coatings Logo"
-              class="h-11 sm:h-13 w-auto object-contain"
-            />
+            <picture>
+              <source srcset="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.webp" type="image/webp">
+              <img
+                src="https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/Logo.png"
+                onerror="this.onerror=null; this.src='assests/Logo.png'"
+                alt="JADE Coatings Logo"
+                class="h-11 sm:h-13 w-auto object-contain"
+                loading="lazy"
+                decoding="async"
+              />
+            </picture>
           </div>
           <p class="text-xs text-gray-400 max-w-sm leading-relaxed">
             A brand of Colour Max Lanka Pvt Ltd. Pioneers in water-based, eco-friendly coating technology in Sri Lanka since 2015.
@@ -1077,12 +1095,16 @@
   </footer>
 
   <script>
-    // ASSET CDN HELPER FOR RELIABLE CLOUD DELIVERY
+    // ASSET CDN HELPER FOR ULTRA-FAST DELIVERY
     const ASSETS_BASE = "https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/";
-    function getAssetUrl(filename) {
+    function getAssetUrl(filename, forceOriginal = false) {
       if (!filename) return '';
       if (filename.startsWith('http://') || filename.startsWith('https://')) return filename;
-      return ASSETS_BASE + encodeURIComponent(filename.trim());
+      let clean = filename.trim();
+      if (!forceOriginal && !clean.toLowerCase().includes('favicon') && !clean.toLowerCase().endsWith('.pdf')) {
+        clean = clean.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+      }
+      return ASSETS_BASE + encodeURIComponent(clean);
     }
 
     // 1. PRODUCTS REPOSITORY WITH BEFORE/AFTER PROFILES
@@ -2466,31 +2488,7 @@
     
 
 
-    // Product Page Hero 3D Video & Mascot Switcher
-    function switchProductHeroTab(mode) {
-      const vidStage = document.getElementById('product-hero-video-stage');
-      const masStage = document.getElementById('product-hero-mascot-stage');
-      const tabVid = document.getElementById('hero-tab-video');
-      const tabMas = document.getElementById('hero-tab-mascot');
-      const video = document.getElementById('product-hero-video-elem');
 
-      if (mode === 'video') {
-        vidStage.classList.remove('hidden');
-        vidStage.classList.add('flex');
-        masStage.classList.add('hidden');
-        masStage.classList.remove('flex');
-        tabVid.className = 'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-[#00A651] text-white shadow-lg shadow-[#00A651]/30';
-        tabMas.className = 'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 text-white/70 hover:text-white';
-        if (video) video.play().catch(() => {});
-      } else {
-        vidStage.classList.add('hidden');
-        vidStage.classList.remove('flex');
-        masStage.classList.remove('hidden');
-        masStage.classList.add('flex');
-        tabMas.className = 'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-[#00A651] text-white shadow-lg shadow-[#00A651]/30';
-        tabVid.className = 'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 text-white/70 hover:text-white';
-      }
-    }
 
     function toggleHeroVideoPlay() {
       const video = document.getElementById('product-hero-video-elem');
