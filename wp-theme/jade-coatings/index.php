@@ -960,6 +960,23 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
           <ul id="modal-features" class="space-y-2 text-sm text-gray-700"></ul>
         </div>
 
+        <!-- Modal TDS Download Box -->
+        <div id="modal-tds-box" class="hidden p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-[#00A651] text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-[#00A651]/30">
+              <svg class="w-4 h-4 fill-none stroke-current" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            </div>
+            <div>
+              <h4 class="font-bold text-xs text-[#231F20] dark:text-white">Technical Data Sheet (TDS)</h4>
+              <p class="text-[11px] text-gray-500 dark:text-slate-300">Official technical specification document (PDF)</p>
+            </div>
+          </div>
+          <a id="modal-tds-link" href="#" download="" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-xl bg-[#00A651] hover:bg-[#008F45] text-white font-bold text-xs shadow transition-all flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <span>Download TDS</span>
+          </a>
+        </div>
+
         <div id="modal-tutorial-box" class="hidden p-4 rounded-2xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-xl bg-red-600 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-red-600/30">
@@ -1328,7 +1345,8 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
         beforeImage: "JADE woodshield all in one before.png",
         afterImage: "JADE woodshield all in one after.png",
         image: "JADE woodshield all in one after.png",
-        tutorialUrl: "https://youtu.be/p5zWiq1RJk8?si=l--sZVHhkiyW4KRE"
+        tutorialUrl: "https://youtu.be/p5zWiq1RJk8?si=l--sZVHhkiyW4KRE",
+        tdsFile: "JADE_Woodshield_All_In_One_TDS.pdf"
       },
       { 
         id: 7, 
@@ -2073,9 +2091,17 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
           
           <!-- Card Action Buttons -->
           <div class="pt-4 border-t border-gray-100 flex items-center justify-between gap-2">
-            <button onclick="openProductModal(${p.id})" class="px-3.5 py-2 rounded-xl text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors">
-              Specs
-            </button>
+            <div class="flex items-center gap-1.5 sm:gap-2">
+              <button onclick="openProductModal(${p.id})" class="px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors">
+                Specs
+              </button>
+              ${p.tdsFile ? `
+              <a href="${getAssetUrl(p.tdsFile)}" download="${p.tdsFile}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 hover:border-emerald-300 transition-all shadow-xs hover:scale-[1.02] active:scale-95" title="Download Technical Data Sheet (PDF)">
+                <svg class="w-3.5 h-3.5 text-[#00A651]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                <span>TDS</span>
+              </a>
+              ` : ''}
+            </div>
             ${isPutty || isCleaner || isTyreShield ? `
             <button onclick="navigateTo('contact')" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#00A651] hover:bg-[#008F45] transition-colors shadow-sm flex items-center gap-1.5">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
@@ -2334,6 +2360,18 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
       } else {
         if (calcBtn) calcBtn.classList.remove('hidden');
         if (inqBtn) inqBtn.classList.add('hidden');
+      }
+
+      const tdsBox = document.getElementById('modal-tds-box');
+      const tdsLink = document.getElementById('modal-tds-link');
+      if (tdsBox && tdsLink) {
+        if (p.tdsFile) {
+          tdsBox.classList.remove('hidden');
+          tdsLink.href = getAssetUrl(p.tdsFile);
+          tdsLink.setAttribute('download', p.tdsFile);
+        } else {
+          tdsBox.classList.add('hidden');
+        }
       }
 
       const tutorialBox = document.getElementById('modal-tutorial-box');

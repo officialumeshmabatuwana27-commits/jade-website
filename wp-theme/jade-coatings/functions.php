@@ -296,6 +296,25 @@ add_action('init', function() {
         }
     }
 
+    // Intercept TDS PDF direct requests immediately
+    if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/JADE_Woodshield_All_In_One_TDS\.pdf$#i', parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH))) {
+        $tds_file = get_template_directory() . '/assests/JADE_Woodshield_All_In_One_TDS.pdf';
+        if (file_exists($tds_file)) {
+            status_header(200);
+            header('Content-Type: application/pdf');
+            header('Content-Disposition: inline; filename="JADE_Woodshield_All_In_One_TDS.pdf"');
+            header('Cache-Control: public, max-age=31536000, immutable');
+            readfile($tds_file);
+            exit;
+        }
+    }
+
+    // Auto-sync TDS PDF to ABSPATH web root
+    $tds_source = get_template_directory() . '/assests/JADE_Woodshield_All_In_One_TDS.pdf';
+    if (file_exists($tds_source) && !file_exists(ABSPATH . 'JADE_Woodshield_All_In_One_TDS.pdf')) {
+        @copy($tds_source, ABSPATH . 'JADE_Woodshield_All_In_One_TDS.pdf');
+    }
+
     // Intercept Shops API requests immediately
     if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/(api/shops|shops\.json)(\?.*)?$#i', $_SERVER['REQUEST_URI'])) {
         jade_handle_shops_api();
@@ -385,7 +404,7 @@ add_action('wp_head', function() {
 add_action('send_headers', function() {
     if (!is_admin()) {
         $uri = $_SERVER['REQUEST_URI'] ?? '';
-        if (preg_match('/\.(css|js|png|jpg|jpeg|gif|ico|svg|woff2?|webp|mp4)$/i', $uri)) {
+        if (preg_match('/\.(css|js|png|jpg|jpeg|gif|ico|svg|woff2?|webp|mp4|pdf)$/i', $uri)) {
             header('Cache-Control: public, max-age=31536000, immutable');
         } else {
             header('Cache-Control: public, max-age=600, stale-while-revalidate=86400');
