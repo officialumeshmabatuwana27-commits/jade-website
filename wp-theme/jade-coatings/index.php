@@ -74,6 +74,15 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-R23V5F84F6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-R23V5F84F6');
+  </script>
   <script>
     const THEME_DIR_URI = "<?php echo get_template_directory_uri(); ?>";
     const GITHUB_ASSETS_CDN = "https://officialumeshmabatuwana27-commits.github.io/jade-website/assests/";
