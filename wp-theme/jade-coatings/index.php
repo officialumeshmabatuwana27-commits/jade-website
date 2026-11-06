@@ -1805,7 +1805,7 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
     ];
 
     const PROJECTS = [
-      { name: "Shangri-La Hambantota", location: "Hambantota, Sri Lanka", desc: "Comprehensive coastal resort timber protection and masonry sealer application enduring Indian Ocean ocean-spray and humidity.", tag: "Luxury Coastal Resort", logo: "Shangrila hambanthota.png" },
+      { name: "Shangri-La Hambantota", location: "Hambantota, Sri Lanka", desc: "Comprehensive coastal resort timber protection and masonry sealer application enduring Indian Ocean ocean-spray and humidity.", tag: "Luxury Coastal Resort", logo: "Shangri-La.png" },
       { name: "Heritance Ahungalla", location: "Ahungalla, Sri Lanka", desc: "Eco-friendly WOODSHIELD and MASOGUARD applications across architectural timber pavilions and stone courtyards.", tag: "Heritage Hotel", logo: "Heritance ahungalla.png" },
       { name: "Jetwing Blue Negombo", location: "Negombo, Sri Lanka", desc: "Water-based UV and marine-resistant finishing for exterior beach-facing furniture, decking, and architectural concrete walls.", tag: "Premier Beachfront Resort", logo: "jetwing blue negombo.png" },
       { name: "Palm Resort Nilaveli", location: "Nilaveli, Eastern Province", desc: "High-exposure coastal chalet finishing demanding non-toxic, moisture-proof, ultra-low VOC interior and exterior durability.", tag: "Boutique Beach Resort", logo: "palm resort.png" },
