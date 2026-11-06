@@ -1771,7 +1771,8 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
         afterColor: "from-black to-zinc-900",
         beforeImage: "tyreshield all in one before.png",
         afterImage: "tyreshield all in one after.png",
-        image: "tyreshield all in one after.png"
+        image: "tyreshield all in one after.png",
+        tdsFile: "JADE_Tyreshield_All_In_One_TDS.pdf"
       },
       { 
         id: 20, 
