@@ -1590,7 +1590,8 @@ if (in_array(strtolower($request_path), $valid_sections) || preg_match('#^produc
         afterColor: "from-emerald-500 to-[#00A651]",
         beforeImage: "universal cleaner before.png",
         afterImage: "universal cleaner after.png",
-        image: "universal cleaner after.png"
+        image: "universal cleaner after.png",
+        tdsFile: "JADE_Universal_Cleaner_TDS.pdf"
       },
       
       // DECORATIVES - Domestic (NEW)
